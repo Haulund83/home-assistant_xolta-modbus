@@ -15,6 +15,7 @@ from custom_components.xolta_modbus.modbus import (
 from custom_components.xolta_modbus.registers import (
     CLUSTER_BLOCK,
     MAIN_BLOCK,
+    activity,
     decode,
 )
 
@@ -39,6 +40,24 @@ async def test_read_blocks_and_decode(fake_xolta: FakeXolta) -> None:
     assert data["cluster_state"] == "running"
     assert data["mode"] == "stop"
     assert data["fully_charged"] is False
+    assert data["activity"] == "discharging"
+
+
+@pytest.mark.parametrize(
+    ("power", "expected"),
+    [
+        (1.5, "discharging"),
+        (0.1, "discharging"),  # slow discharge seen live (SoC falling)
+        (0.0, "standby"),  # what Stop reads
+        (0.04, "standby"),
+        (-0.04, "standby"),
+        (-0.46, "charging"),
+        (None, None),
+    ],
+)
+def test_activity(power: float | None, expected: str | None) -> None:
+    """Charging status follows the sign of the inverter power with a 0.05 kW band."""
+    assert activity(power) == expected
 
 
 async def test_out_of_range_read_raises_exception_2(fake_xolta: FakeXolta) -> None:

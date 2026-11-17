@@ -84,6 +84,7 @@ Only values that have been seen working on a real battery are included ([details
 
 **Always (read only):**
 - State of charge (%), **Power** (kW; *positive = discharging, negative = charging*)
+- **Charging status**: Charging / Discharging / Standby (standby below 0.05 kW)
 - **Energy charged / discharged** (kWh), ready for the Energy dashboard without helpers
 - State (resting / starting / running / fault)
 - Diagnostics: DC voltage/current, cell temperature and voltage (min/max), charge/discharge limit, grid frequency, AC voltage/current
@@ -107,7 +108,7 @@ The battery is normally driven by the Ebbefos cloud (schedule, arbitrage, plans)
 
 ## Examples
 
-Entity IDs follow the language Home Assistant had when the integration was added. The examples use English IDs; in e.g. a Danish installation the state of charge is `sensor.xolta_modbus_opladning`. Check the IDs on the device page.
+Entity IDs follow the language Home Assistant had when the integration was added. The examples use English IDs; in e.g. a Danish installation the state of charge is `sensor.xolta_modbus_ladetilstand`. Check the IDs on the device page.
 
 **Stop the battery while the EV charges:** import the blueprint
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml).

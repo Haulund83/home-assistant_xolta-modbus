@@ -68,7 +68,8 @@ Alt andet har fornuftige standardværdier og kan ændres under **Konfigurer**: s
 Kun værdier, der er set virke på et rigtigt batteri, er med ([detaljer](docs/VERIFIED.md)).
 
 **Altid (kun læsning):**
-- Opladning (%), **Effekt** (kW; *positiv = aflader, negativ = lader*)
+- **Ladetilstand** (%), **Effekt** (kW; *positiv = aflader, negativ = lader*)
+- **Ladestatus**: Lader / Aflader / Standby (Standby under 0,05 kW)
 - **Energi opladet / afladet** (kWh), klar til Energi-dashboardet uden hjælpere
 - Tilstand (hviler / starter / kører / fejl)
 - Diagnostik: DC-spænding/-strøm, celletemperatur og -spænding (min/maks), lade-/afladegrænse, netfrekvens, AC-spænding/-strøm
@@ -92,7 +93,7 @@ Batteriet styres normalt af Ebbefos' sky (plan, arbitrage, skema). Integrationen
 
 ## Eksempler
 
-Entitets-id'erne følger det sprog, Home Assistant havde, da integrationen blev tilføjet. Eksemplerne bruger engelske id'er; i en dansk installation hedder fx opladningen `sensor.xolta_modbus_opladning` og overstyringen `select.xolta_modbus_overstyring`. Se id'erne på enhedens side.
+Entitets-id'erne følger det sprog, Home Assistant havde, da integrationen blev tilføjet. Eksemplerne bruger engelske id'er; i en dansk installation hedder fx ladetilstanden `sensor.xolta_modbus_ladetilstand` og overstyringen `select.xolta_modbus_overstyring`. Se id'erne på enhedens side.
 
 **Stop batteriet, mens elbilen lader:** Importér blueprintet
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml) (Indstillinger → Automationer → Blueprints → Importér, indsæt GitHub-linket til filen).

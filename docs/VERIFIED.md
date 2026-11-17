@@ -13,6 +13,7 @@ enabled by Ebbefos support in November 2026.
 |---|---|
 | State of charge | Matched the cloud (52.66 % vs 52.7 %). |
 | Power and its sign | Charge and discharge started from the Ebbefos app: discharge read positive, charge negative, both directions. Matches the cloud's sign but arrives 1–2 min earlier. |
+| Charging status (charging / discharging / standby) | Derived from power with a 0.05 kW band: Stop read exactly 0.0 kW; a slow discharge of ~0.1 kW came with a falling state of charge. |
 | AC voltage / current (L1) | 235.1 V × 5.61 A ≈ 1.32 kW while power read 1.30 kW. |
 | DC voltage / current and sign | 49 V pack; current negative while discharging (-28 A at 1.3 kW), positive while charging. |
 | Cell temperature / voltage min-max | Plausible and consistent (3.26–3.31 V, 17–40 °C). |

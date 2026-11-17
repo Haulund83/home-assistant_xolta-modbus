@@ -71,8 +71,16 @@
   },
   "entity": {
     "sensor": {
-      "state_of_charge": { "name": "Opladning" },
+      "state_of_charge": { "name": "Ladetilstand" },
       "power": { "name": "Effekt" },
+      "activity": {
+        "name": "Ladestatus",
+        "state": {
+          "charging": "Lader",
+          "discharging": "Aflader",
+          "standby": "Standby"
+        }
+      },
       "dc_voltage": { "name": "DC-spænding" },
       "dc_current": { "name": "DC-strøm" },
       "cell_temperature_min": { "name": "Celletemperatur min" },

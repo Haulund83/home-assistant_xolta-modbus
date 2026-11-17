@@ -73,6 +73,14 @@
     "sensor": {
       "state_of_charge": { "name": "State of charge" },
       "power": { "name": "Power" },
+      "activity": {
+        "name": "Charging status",
+        "state": {
+          "charging": "Charging",
+          "discharging": "Discharging",
+          "standby": "Standby"
+        }
+      },
       "dc_voltage": { "name": "DC voltage" },
       "dc_current": { "name": "DC current" },
       "cell_temperature_min": { "name": "Cell temperature min" },

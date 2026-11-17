@@ -27,7 +27,7 @@ from homeassistant.util import dt as dt_util
 
 from . import XoltaConfigEntry
 from .entity import XoltaControlEntity, XoltaEntity
-from .registers import STATE_CODES
+from .registers import ACTIVITY_OPTIONS, STATE_CODES
 
 PARALLEL_UPDATES = 0
 MAX_INTEGRATION_GAP = timedelta(minutes=5)
@@ -57,13 +57,13 @@ def _num(
     )
 
 
-def _enum(key: str, codes: dict[int, str]) -> SensorEntityDescription:
+def _enum(key: str, options: list[str], *, diagnostic: bool = True) -> SensorEntityDescription:
     return SensorEntityDescription(
         key=key,
         translation_key=key,
         device_class=SensorDeviceClass.ENUM,
-        options=list(codes.values()),
-        entity_category=DIAG,
+        options=options,
+        entity_category=DIAG if diagnostic else None,
     )
 
 
@@ -75,6 +75,7 @@ SD = SensorDeviceClass
 SENSORS: tuple[SensorEntityDescription, ...] = (
     _num("state_of_charge", PERCENTAGE, SD.BATTERY, 1, diagnostic=False),
     _num("power", KW, SD.POWER, 2, diagnostic=False),
+    _enum("activity", ACTIVITY_OPTIONS, diagnostic=False),
     _num("dc_voltage", V, SD.VOLTAGE, 1),
     _num("dc_current", A, SD.CURRENT, 1),
     _num("cell_temperature_min", UnitOfTemperature.CELSIUS, SD.TEMPERATURE, 1),
@@ -86,7 +87,7 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
     _num("grid_frequency", UnitOfFrequency.HERTZ, SD.FREQUENCY, 2),
     _num("ac_voltage_l1", V, SD.VOLTAGE, 1),
     _num("ac_current_l1", A, SD.CURRENT, 1),
-    _enum("state", STATE_CODES),
+    _enum("state", list(STATE_CODES.values())),
 )
 
 

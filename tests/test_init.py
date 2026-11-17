@@ -120,7 +120,7 @@ async def test_removed_entities_are_not_created(hass: HomeAssistant, setup_entry
         "state_of_charge", "power", "dc_voltage", "dc_current",
         "cell_temperature_min", "cell_temperature_max", "cell_voltage_min", "cell_voltage_max",
         "charge_limit", "discharge_limit", "grid_frequency", "ac_voltage_l1", "ac_current_l1",
-        "state", "energy_charged", "energy_discharged",
+        "state", "activity", "energy_charged", "energy_discharged",
     }  # fmt: skip
 
 

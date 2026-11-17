@@ -2,6 +2,14 @@
   "entity": {
     "sensor": {
       "state": { "default": "mdi:battery-heart-variant" },
+      "activity": {
+        "default": "mdi:battery",
+        "state": {
+          "charging": "mdi:battery-charging",
+          "discharging": "mdi:battery-arrow-down",
+          "standby": "mdi:battery-clock-outline"
+        }
+      },
       "charge_limit": { "default": "mdi:battery-arrow-up" },
       "discharge_limit": { "default": "mdi:battery-arrow-down" },
       "energy_charged": { "default": "mdi:battery-plus" },

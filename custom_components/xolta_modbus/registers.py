@@ -33,6 +33,23 @@ UNIT_STATE_CODES = {
 CLUSTER_STATE_CODES = {1: "all_resting", 3: "running", 4: "fault"}
 MODE_CODES = {0: "stop", 1: "self_consumption", 2: "passive", 3: "local"}
 
+# Charging status, derived from the inverter power. During Stop the power read
+# exactly 0.0 kW; a slow discharge of ~0.1 kW showed a falling state of charge.
+STANDBY_THRESHOLD_KW = 0.05
+ACTIVITY_OPTIONS = ["charging", "discharging", "standby"]
+
+
+def activity(power_kw: float | None) -> str | None:
+    """Charging / discharging / standby from the power (positive = discharging)."""
+    if power_kw is None:
+        return None
+    if power_kw > STANDBY_THRESHOLD_KW:
+        return "discharging"
+    if power_kw < -STANDBY_THRESHOLD_KW:
+        return "charging"
+    return "standby"
+
+
 # key -> float32 start address inside the main block
 FLOAT_REGISTERS: dict[str, int] = {
     "dc_voltage": 7,
@@ -66,6 +83,7 @@ def decode(main: list[int], cluster: list[int]) -> dict[str, Any]:
     data: dict[str, Any] = {
         key: _float32(main, address) for key, address in FLOAT_REGISTERS.items()
     }
+    data["activity"] = activity(data["power"])
     data["fully_charged"] = bool(main[0])
     data["fully_discharged"] = bool(main[1])
     data["state"] = STATE_CODES.get(main[2])
