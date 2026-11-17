@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Xolta battery (local Modbus)",
+        "description": "Enter the IP address of the Xolta site controller. Give it a fixed IP address (DHCP reservation) in your router first. Modbus TCP must be enabled by Xolta/Ebbefos support; see the README for the e-mail to send.",
+        "data": {
+          "host": "IP address",
+          "allow_write": "Allow Home Assistant to control the battery"
+        },
+        "data_description": {
+          "host": "The fixed IP address of the site controller, e.g. 192.168.1.50.",
+          "allow_write": "Off = read only (safe). On = adds an override (Auto / Stop / Self-consumption) that writes to the battery. You can change this later under Configure."
+        }
+      },
+      "reconfigure": {
+        "title": "Change IP address",
+        "data": { "host": "IP address" },
+        "data_description": { "host": "The new fixed IP address of the site controller." }
+      }
+    },
+    "error": {
+      "cannot_connect": "No answer from this address on port 502. Check the IP address and that Home Assistant can reach it.",
+      "connection_refused": "The controller refused the connection. Modbus TCP is probably not enabled yet; ask Xolta/Ebbefos support to enable it (see the README).",
+      "not_xolta": "Something answered, but it does not look like a Xolta site controller.",
+      "unknown": "Unexpected error. See the log."
+    },
+    "abort": {
+      "already_configured": "This controller is already set up.",
+      "reconfigure_successful": "The IP address has been updated."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Xolta battery options",
+        "data": {
+          "allow_write": "Allow Home Assistant to control the battery",
+          "scan_interval": "Read interval",
+          "repeat_interval": "Repeat interval while an override is active",
+          "port": "Modbus TCP port",
+          "unit_id": "Modbus unit id"
+        },
+        "data_description": {
+          "allow_write": "Turning this off removes the override entities and stops any active override. Nothing is written; the cloud takes control back by itself.",
+          "scan_interval": "How often the battery is read. Default 10 s.",
+          "repeat_interval": "The cloud resets the mode after about 90 s, so the override is written again at this interval. Default 20 s.",
+          "port": "Default 502.",
+          "unit_id": "Default 1."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "state_of_charge": { "name": "State of charge" },
+      "power": { "name": "Power" },
+      "reactive_power": { "name": "Reactive power" },
+      "dc_voltage": { "name": "DC voltage" },
+      "dc_current": { "name": "DC current" },
+      "cell_temperature_min": { "name": "Cell temperature min" },
+      "cell_temperature_max": { "name": "Cell temperature max" },
+      "cell_voltage_min": { "name": "Cell voltage min" },
+      "cell_voltage_max": { "name": "Cell voltage max" },
+      "charge_limit": { "name": "Charge limit" },
+      "discharge_limit": { "name": "Discharge limit" },
+      "grid_frequency": { "name": "Grid frequency" },
+      "ac_voltage_l1": { "name": "AC voltage L1" },
+      "ac_voltage_l2": { "name": "AC voltage L2" },
+      "ac_voltage_l3": { "name": "AC voltage L3" },
+      "ac_current_l1": { "name": "AC current L1" },
+      "ac_current_l2": { "name": "AC current L2" },
+      "ac_current_l3": { "name": "AC current L3" },
+      "energy_charged": { "name": "Energy charged" },
+      "energy_discharged": { "name": "Energy discharged" },
+      "override_ends": { "name": "Override ends" },
+      "state": {
+        "name": "State",
+        "state": {
+          "resting": "Resting",
+          "starting_stopping": "Starting/stopping",
+          "running": "Running",
+          "fault": "Fault"
+        }
+      },
+      "unit_state": {
+        "name": "Unit state",
+        "state": {
+          "out_of_service": "Out of service",
+          "auto_charge": "Auto charge (cells low)",
+          "cell_balancing": "Cell balancing",
+          "balance_recovery": "Balance recovery",
+          "cluster": "Cluster (normal)"
+        }
+      },
+      "cluster_state": {
+        "name": "Cluster state",
+        "state": {
+          "all_resting": "All resting",
+          "running": "Running",
+          "fault": "Fault"
+        }
+      },
+      "mode": {
+        "name": "Modbus mode (reported)",
+        "state": {
+          "stop": "Stop",
+          "self_consumption": "Max self-consumption",
+          "passive": "Passive",
+          "local": "Local"
+        }
+      }
+    },
+    "binary_sensor": {
+      "fully_charged": { "name": "Fully charged" },
+      "fully_discharged": { "name": "Fully discharged" },
+      "cell_balancing_needed": { "name": "Cell balancing needed" },
+      "auto_cell_balancing": { "name": "Auto cell balancing" },
+      "override_contested": { "name": "Override not followed" }
+    },
+    "select": {
+      "override": {
+        "name": "Override",
+        "state": {
+          "auto": "Auto (cloud controls)",
+          "stop": "Stop – don't use the battery",
+          "self_consumption": "Self-consumption (don't sell)"
+        }
+      }
+    },
+    "number": {
+      "override_duration": { "name": "Override duration" }
+    }
+  },
+  "selector": {
+    "override_mode": {
+      "options": {
+        "auto": "Auto (cloud controls)",
+        "stop": "Stop – don't use the battery",
+        "self_consumption": "Self-consumption (don't sell)"
+      }
+    }
+  },
+  "services": {
+    "set_override": {
+      "name": "Set override",
+      "description": "Start or end a battery override. Auto writes nothing; the cloud takes control back within a few minutes.",
+      "fields": {
+        "mode": { "name": "Mode", "description": "Auto, Stop or Self-consumption." },
+        "duration": { "name": "Duration", "description": "Hours before Auto is restored. Default: the Override duration entity." }
+      }
+    }
+  },
+  "exceptions": {
+    "write_failed": { "message": "Could not write to the battery: {error}" }
+  }
+}

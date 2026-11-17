@@ -1,0 +1,12 @@
+{
+  "domain": "xolta_modbus",
+  "name": "Xolta Battery (local Modbus)",
+  "codeowners": ["@Haulund83"],
+  "config_flow": true,
+  "documentation": "https://github.com/Haulund83/home-assistant_xolta-modbus",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/Haulund83/home-assistant_xolta-modbus/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

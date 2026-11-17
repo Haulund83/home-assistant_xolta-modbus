@@ -1,0 +1,157 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Xolta batteri (lokal Modbus)",
+        "description": "Indtast IP-adressen på Xoltas site-controller. Giv den først en fast IP-adresse (DHCP-reservation) i din router. Modbus TCP skal slås til af Xolta/Ebbefos' support; se README for den mail, du skal sende.",
+        "data": {
+          "host": "IP-adresse",
+          "allow_write": "Tillad at Home Assistant styrer batteriet"
+        },
+        "data_description": {
+          "host": "Site-controllerens faste IP-adresse, fx 192.168.1.50.",
+          "allow_write": "Slukket = kun læsning (sikkert). Tændt = giver en overstyring (Auto / Stop / Eget forbrug), der skriver til batteriet. Kan ændres senere under Konfigurer."
+        }
+      },
+      "reconfigure": {
+        "title": "Skift IP-adresse",
+        "data": { "host": "IP-adresse" },
+        "data_description": { "host": "Site-controllerens nye faste IP-adresse." }
+      }
+    },
+    "error": {
+      "cannot_connect": "Intet svar fra adressen på port 502. Tjek IP-adressen, og at Home Assistant kan nå den.",
+      "connection_refused": "Controlleren afviste forbindelsen. Modbus TCP er sandsynligvis ikke slået til endnu; bed Xolta/Ebbefos' support om at slå det til (se README).",
+      "not_xolta": "Noget svarede, men det ligner ikke en Xolta site-controller.",
+      "unknown": "Uventet fejl. Se loggen."
+    },
+    "abort": {
+      "already_configured": "Denne controller er allerede sat op.",
+      "reconfigure_successful": "IP-adressen er opdateret."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Indstillinger for Xolta batteri",
+        "data": {
+          "allow_write": "Tillad at Home Assistant styrer batteriet",
+          "scan_interval": "Læseinterval",
+          "repeat_interval": "Gentagelse mens en overstyring er aktiv",
+          "port": "Modbus TCP-port",
+          "unit_id": "Modbus unit-id"
+        },
+        "data_description": {
+          "allow_write": "Slukker du, fjernes overstyringen, og en aktiv overstyring stoppes. Der skrives intet; skyen tager selv styringen tilbage.",
+          "scan_interval": "Hvor tit batteriet læses. Standard 10 s.",
+          "repeat_interval": "Skyen nulstiller driftsformen efter ca. 90 s, så overstyringen skrives igen med dette interval. Standard 20 s.",
+          "port": "Standard 502.",
+          "unit_id": "Standard 1."
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "state_of_charge": { "name": "Opladning" },
+      "power": { "name": "Effekt" },
+      "reactive_power": { "name": "Reaktiv effekt" },
+      "dc_voltage": { "name": "DC-spænding" },
+      "dc_current": { "name": "DC-strøm" },
+      "cell_temperature_min": { "name": "Celletemperatur min" },
+      "cell_temperature_max": { "name": "Celletemperatur maks" },
+      "cell_voltage_min": { "name": "Cellespænding min" },
+      "cell_voltage_max": { "name": "Cellespænding maks" },
+      "charge_limit": { "name": "Ladegrænse" },
+      "discharge_limit": { "name": "Afladegrænse" },
+      "grid_frequency": { "name": "Netfrekvens" },
+      "ac_voltage_l1": { "name": "AC-spænding L1" },
+      "ac_voltage_l2": { "name": "AC-spænding L2" },
+      "ac_voltage_l3": { "name": "AC-spænding L3" },
+      "ac_current_l1": { "name": "AC-strøm L1" },
+      "ac_current_l2": { "name": "AC-strøm L2" },
+      "ac_current_l3": { "name": "AC-strøm L3" },
+      "energy_charged": { "name": "Energi opladet" },
+      "energy_discharged": { "name": "Energi afladet" },
+      "override_ends": { "name": "Overstyring slutter" },
+      "state": {
+        "name": "Tilstand",
+        "state": {
+          "resting": "Hviler",
+          "starting_stopping": "Starter/stopper",
+          "running": "Kører",
+          "fault": "Fejl"
+        }
+      },
+      "unit_state": {
+        "name": "Enhedstilstand",
+        "state": {
+          "out_of_service": "Ude af drift",
+          "auto_charge": "Autoladning (celler lave)",
+          "cell_balancing": "Cellebalancering",
+          "balance_recovery": "Balance-genopretning",
+          "cluster": "Klynge (normal)"
+        }
+      },
+      "cluster_state": {
+        "name": "Klyngetilstand",
+        "state": {
+          "all_resting": "Alle hviler",
+          "running": "Kører",
+          "fault": "Fejl"
+        }
+      },
+      "mode": {
+        "name": "Modbus-driftsform (rapporteret)",
+        "state": {
+          "stop": "Stop",
+          "self_consumption": "Maks. eget forbrug",
+          "passive": "Passiv",
+          "local": "Lokal"
+        }
+      }
+    },
+    "binary_sensor": {
+      "fully_charged": { "name": "Fuldt opladet" },
+      "fully_discharged": { "name": "Fuldt afladet" },
+      "cell_balancing_needed": { "name": "Cellebalancering nødvendig" },
+      "auto_cell_balancing": { "name": "Automatisk cellebalancering" },
+      "override_contested": { "name": "Overstyring følges ikke" }
+    },
+    "select": {
+      "override": {
+        "name": "Overstyring",
+        "state": {
+          "auto": "Auto (skyen styrer)",
+          "stop": "Stop – brug ikke batteriet",
+          "self_consumption": "Eget forbrug (sælg ikke)"
+        }
+      }
+    },
+    "number": {
+      "override_duration": { "name": "Overstyringens varighed" }
+    }
+  },
+  "selector": {
+    "override_mode": {
+      "options": {
+        "auto": "Auto (skyen styrer)",
+        "stop": "Stop – brug ikke batteriet",
+        "self_consumption": "Eget forbrug (sælg ikke)"
+      }
+    }
+  },
+  "services": {
+    "set_override": {
+      "name": "Sæt overstyring",
+      "description": "Start eller afslut en overstyring af batteriet. Auto skriver intet; skyen tager selv styringen tilbage inden for få minutter.",
+      "fields": {
+        "mode": { "name": "Driftsform", "description": "Auto, Stop eller Eget forbrug." },
+        "duration": { "name": "Varighed", "description": "Timer før Auto gendannes. Standard: entiteten Overstyringens varighed." }
+      }
+    }
+  },
+  "exceptions": {
+    "write_failed": { "message": "Kunne ikke skrive til batteriet: {error}" }
+  }
+}

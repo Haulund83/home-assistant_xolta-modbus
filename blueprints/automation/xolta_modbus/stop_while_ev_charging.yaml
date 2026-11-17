@@ -1,0 +1,84 @@
+blueprint:
+  name: Xolta – stop the battery while the EV charges
+  description: >-
+    Stops the Xolta battery while your EV charger draws power, so the battery
+    is not drained into the car, and returns to Auto (cloud control) when
+    charging ends. Requires the Xolta Battery (local Modbus) integration with
+    control enabled.
+  domain: automation
+  source_url: https://github.com/Haulund83/home-assistant_xolta-modbus/blob/main/blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml
+  input:
+    charger_power:
+      name: EV charger power
+      description: Power sensor of the charger (W or kW).
+      selector:
+        entity:
+          domain: sensor
+          device_class: power
+    threshold:
+      name: Charging threshold
+      description: The car counts as charging above this value (same unit as the sensor).
+      default: 1000
+      selector:
+        number:
+          min: 0
+          max: 22000
+          mode: box
+    override:
+      name: Xolta override
+      selector:
+        entity:
+          integration: xolta_modbus
+          domain: select
+    max_hours:
+      name: Maximum duration
+      description: Safety limit; the override ends by itself after this many hours.
+      default: 14
+      selector:
+        number:
+          min: 1
+          max: 48
+          unit_of_measurement: h
+          mode: box
+
+mode: restart
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input charger_power
+    above: !input threshold
+    for: { minutes: 2 }
+    id: start
+  - trigger: numeric_state
+    entity_id: !input charger_power
+    below: !input threshold
+    for: { minutes: 5 }
+    id: stop
+
+actions:
+  - variables:
+      override_entity: !input override
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: start
+          - condition: template
+            value_template: "{{ is_state(override_entity, 'auto') }}"
+        sequence:
+          - action: xolta_modbus.set_override
+            target:
+              entity_id: !input override
+            data:
+              mode: stop
+              duration: !input max_hours
+      - conditions:
+          - condition: trigger
+            id: stop
+          - condition: template
+            value_template: "{{ is_state(override_entity, 'stop') }}"
+        sequence:
+          - action: xolta_modbus.set_override
+            target:
+              entity_id: !input override
+            data:
+              mode: auto

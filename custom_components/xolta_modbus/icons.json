@@ -1,0 +1,37 @@
+{
+  "entity": {
+    "sensor": {
+      "state": { "default": "mdi:battery-heart-variant" },
+      "unit_state": { "default": "mdi:battery-check" },
+      "cluster_state": { "default": "mdi:battery-sync-outline" },
+      "mode": { "default": "mdi:battery-sync" },
+      "charge_limit": { "default": "mdi:battery-arrow-up" },
+      "discharge_limit": { "default": "mdi:battery-arrow-down" },
+      "energy_charged": { "default": "mdi:battery-plus" },
+      "energy_discharged": { "default": "mdi:battery-minus" },
+      "override_ends": { "default": "mdi:timer-outline" }
+    },
+    "binary_sensor": {
+      "fully_charged": { "default": "mdi:battery", "state": { "off": "mdi:battery-60" } },
+      "fully_discharged": { "default": "mdi:battery-outline", "state": { "off": "mdi:battery-60" } },
+      "auto_cell_balancing": { "default": "mdi:scale-balance" },
+      "override_contested": { "default": "mdi:cloud-alert" }
+    },
+    "select": {
+      "override": {
+        "default": "mdi:battery-sync",
+        "state": {
+          "auto": "mdi:cloud-outline",
+          "stop": "mdi:battery-off-outline",
+          "self_consumption": "mdi:home-battery"
+        }
+      }
+    },
+    "number": {
+      "override_duration": { "default": "mdi:timer-cog-outline" }
+    }
+  },
+  "services": {
+    "set_override": { "service": "mdi:battery-sync" }
+  }
+}
