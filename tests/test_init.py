@@ -3,18 +3,20 @@
 from __future__ import annotations
 
 from datetime import timedelta
+from unittest.mock import patch
 
 from freezegun.api import FrozenDateTimeFactory
 from homeassistant.config_entries import ConfigEntryState
-from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNKNOWN
+from homeassistant.const import STATE_OFF, STATE_ON, STATE_UNAVAILABLE, STATE_UNKNOWN
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import entity_registry as er, issue_registry as ir
 import pytest
 from pytest_homeassistant_custom_component.common import async_fire_time_changed
 
 from custom_components.xolta_modbus.const import CONF_ALLOW_WRITE, DOMAIN
 
-from .fake_xolta import FakeXolta
+from .conftest import make_entry
+from .fake_xolta import FakeClient, FakeXolta
 
 SOC = "sensor.xolta_battery_state_of_charge"
 POWER = "sensor.xolta_battery_power"
@@ -41,19 +43,81 @@ async def test_read_only_setup(hass: HomeAssistant, setup_entry) -> None:
     assert hass.states.get(DURATION) is None
 
 
-async def test_setup_retries_when_unreachable(hass: HomeAssistant) -> None:
-    """If the controller is down at startup, HA retries later."""
-    from .conftest import make_entry
-
-    server = FakeXolta()
-    await server.start()
-    port = server.port
-    await server.stop()
-    entry = make_entry(port, allow_write=False)
+async def test_waits_for_modbus_and_starts_by_itself(
+    hass: HomeAssistant, fake_xolta: FakeXolta, freezer: FrozenDateTimeFactory
+) -> None:
+    """Saved before Modbus is open: repair issue, retries, then starts on its own."""
+    client = FakeClient(fake_xolta)
+    client.offline = "refused"
+    entry = make_entry(fake_xolta.port, allow_write=False)
     entry.add_to_hass(hass)
-    await hass.config_entries.async_setup(entry.entry_id)
-    await hass.async_block_till_done()
+    issues = ir.async_get(hass)
+    with patch("custom_components.xolta_modbus.XoltaModbusClient", lambda *_a, **_k: client):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
+        assert entry.state is ConfigEntryState.SETUP_RETRY
+        assert issues.async_get_issue(DOMAIN, f"modbus_closed_{entry.entry_id}")
+
+        client.offline = None  # Ebbefos opened Modbus
+        await _tick(hass, freezer, 120)
+        assert entry.state is ConfigEntryState.LOADED
+        assert issues.async_get_issue(DOMAIN, f"modbus_closed_{entry.entry_id}") is None
+        assert hass.states.get(SOC) is not None
+        await hass.config_entries.async_unload(entry.entry_id)
+        await hass.async_block_till_done()
+
+
+async def test_unreachable_at_startup_raises_issue(
+    hass: HomeAssistant, fake_xolta: FakeXolta
+) -> None:
+    """Nothing at the address: a different repair issue (check IP / network)."""
+    client = FakeClient(fake_xolta)
+    client.offline = "timeout"
+    entry = make_entry(fake_xolta.port, allow_write=False)
+    entry.add_to_hass(hass)
+    with (
+        patch("custom_components.xolta_modbus.XoltaModbusClient", lambda *_a, **_k: client),
+        patch("custom_components.xolta_modbus.modbus.async_host_present", return_value=False),
+    ):
+        await hass.config_entries.async_setup(entry.entry_id)
+        await hass.async_block_till_done()
     assert entry.state is ConfigEntryState.SETUP_RETRY
+    assert ir.async_get(hass).async_get_issue(DOMAIN, f"controller_unreachable_{entry.entry_id}")
+
+
+async def test_modbus_closed_later_raises_issue_after_10_min(
+    hass: HomeAssistant, setup_entry, fake_client: FakeClient, freezer: FrozenDateTimeFactory
+) -> None:
+    """Modbus closed by e.g. a firmware update: issue after 10 min, gone when it works again."""
+    issue_id = f"modbus_closed_{setup_entry.entry_id}"
+    issues = ir.async_get(hass)
+    fake_client.offline = "refused"
+    for _ in range(30):  # 5 min
+        await _tick(hass, freezer, 10)
+    assert hass.states.get(SOC).state == STATE_UNAVAILABLE
+    assert issues.async_get_issue(DOMAIN, issue_id) is None
+    for _ in range(36):  # 6 more min
+        await _tick(hass, freezer, 10)
+    assert issues.async_get_issue(DOMAIN, issue_id)
+    fake_client.offline = None
+    await _tick(hass, freezer, 10)
+    assert issues.async_get_issue(DOMAIN, issue_id) is None
+    assert hass.states.get(SOC).state != STATE_UNAVAILABLE
+
+
+async def test_removed_entities_are_not_created(hass: HomeAssistant, setup_entry) -> None:
+    """Only verified values become entities (unverified ones stay in diagnostics)."""
+    registry = er.async_get(hass)
+    unique_ids = {
+        e.unique_id.removeprefix(f"{setup_entry.entry_id}_")
+        for e in er.async_entries_for_config_entry(registry, setup_entry.entry_id)
+    }
+    assert unique_ids == {
+        "state_of_charge", "power", "dc_voltage", "dc_current",
+        "cell_temperature_min", "cell_temperature_max", "cell_voltage_min", "cell_voltage_max",
+        "charge_limit", "discharge_limit", "grid_frequency", "ac_voltage_l1", "ac_current_l1",
+        "state", "energy_charged", "energy_discharged",
+    }  # fmt: skip
 
 
 @pytest.mark.write

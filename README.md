@@ -1,6 +1,8 @@
+<img src="custom_components/xolta_modbus/brand/logo@2x.png" alt="Xolta Modbus" height="96">
+
 # Xolta Battery (local Modbus) for Home Assistant
 
-[Dansk vejledning](README.da.md)
+[Dansk vejledning](README.da.md) · [What has been verified](docs/VERIFIED.md)
 
 Reads your Xolta home battery (sold in Denmark by **Ebbefos Energy**) **directly over your local network** using Modbus TCP: no cloud, no tokens, no YAML. Values arrive every 10 seconds instead of with the cloud's 1–2 minute delay.
 
@@ -64,18 +66,27 @@ You only fill in two things:
 | **IP address** | The controller's fixed IP address from step 1. |
 | **Allow Home Assistant to control the battery** | Off (default): read only, completely safe. On: adds the override (see below). |
 
-The connection is tested right away. *"The controller refused the connection"* means Modbus is not enabled yet (step 2).
+The connection is tested right away, and the integration tells you which case you are in:
+
+| Result | Meaning |
+|---|---|
+| Set up | Modbus is open; entities appear at once. |
+| **Modbus is not open yet** | The controller answers on the address, but not on Modbus. The dialog shows the e-mail for Ebbefos with your IP filled in. Choose *Save and wait*: Home Assistant keeps checking and starts by itself when Modbus opens. A notice under *Settings → Repairs* stays until then. |
+| Nothing answers | Wrong IP, battery off, or Home Assistant cannot reach that network. |
+
+If Modbus is closed again later (for example by a Xolta software update), a repair notice appears after 10 minutes and disappears by itself when Modbus answers again.
 
 Everything else has sensible defaults and can be changed under **Configure**: the write switch, read interval (10 s), repeat interval (20 s), port (502) and unit id (1). Change the IP address with **⋮ → Reconfigure**.
 
 ## What you get
 
+Only values that have been seen working on a real battery are included ([details](docs/VERIFIED.md)).
+
 **Always (read only):**
 - State of charge (%), **Power** (kW; *positive = discharging, negative = charging*)
 - **Energy charged / discharged** (kWh), ready for the Energy dashboard without helpers
-- State, unit state and cluster state (as text)
-- Fully charged / fully discharged, cell balancing needed
-- Diagnostics: DC voltage/current, cell temperature and voltage (min/max), charge/discharge limit, grid frequency, AC voltage/current (L2/L3 disabled by default, most systems are single phase)
+- State (resting / starting / running / fault)
+- Diagnostics: DC voltage/current, cell temperature and voltage (min/max), charge/discharge limit, grid frequency, AC voltage/current
 
 **With control enabled:**
 - **Override** (select): *Auto (cloud controls)* · *Stop – don't use the battery* · *Self-consumption (don't sell)*
@@ -92,7 +103,7 @@ The battery is normally driven by the Ebbefos cloud (schedule, arbitrage, plans)
 - **Auto** writes **nothing**. The integration simply stops repeating, and the cloud takes control back within a few minutes.
 - After a Home Assistant restart, or when control is switched off, the override is always **Auto**. The battery is never left in Stop by accident.
 
-> The mode register (sensor *Modbus mode (reported)*, disabled by default) reads 0 even while the cloud is in control. Use **Power** to see what the battery is really doing.
+> The battery's own mode register reads 0 even while the cloud is in control, so it is not shown. Use **Power** to see what the battery is really doing.
 
 ## Examples
 
@@ -127,9 +138,9 @@ entities:
 ## Troubleshooting
 | Problem | Fix |
 |---|---|
-| "The controller refused the connection" | Modbus is not enabled yet. Send the e-mail from step 2. |
-| "No answer from this address" | Wrong IP, the controller got a new IP (make a DHCP reservation), or Home Assistant cannot reach that network (VLAN/firewall). |
-| Entities become unavailable after a Xolta software update | Check that port 502 is still open; otherwise ask support to enable Modbus again. |
+| "Modbus is not open yet" | Send the e-mail from step 2, then choose *Save and wait*. |
+| "Nothing answers at this address" | Wrong IP, the controller got a new IP (make a DHCP reservation), or Home Assistant cannot reach that network (VLAN/firewall). |
+| Repair notice "Modbus is not open" after it used to work | Probably closed by a Xolta software update. Ask support to enable Modbus again; the integration resumes by itself. |
 | "Override not followed" turns on | The cloud took over. Select the override again, or check the settings on the Ebbefos website. |
 
 Download diagnostics from the device page (⋮ → Download diagnostics). The IP address is redacted.

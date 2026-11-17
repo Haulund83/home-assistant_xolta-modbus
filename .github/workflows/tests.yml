@@ -1,9 +1,15 @@
 name: Tests
 
+# Runs on every change and every Monday against the newest Home Assistant
+# release (pytest-homeassistant-custom-component follows HA releases), so a
+# breaking change in HA shows up here before it reaches users.
+
 on:
   push:
     branches: [main]
   pull_request:
+  schedule:
+    - cron: "0 5 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -19,12 +25,14 @@ jobs:
       - run: ruff format --check .
 
   pytest:
-    name: Pytest
+    name: Pytest (newest Home Assistant)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
+          # Bump when Home Assistant requires a newer Python (the weekly run fails first).
           python-version: "3.14"
-      - run: pip install -r requirements_test.txt
-      - run: pytest -q
+      - run: pip install --upgrade -r requirements_test.txt
+      - run: pip show homeassistant | head -2
+      - run: pytest -q -W "error::DeprecationWarning:custom_components"

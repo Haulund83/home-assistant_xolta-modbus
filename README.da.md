@@ -1,6 +1,8 @@
+<img src="custom_components/xolta_modbus/brand/logo@2x.png" alt="Xolta Modbus" height="96">
+
 # Xolta batteri (lokal Modbus) til Home Assistant
 
-[English](README.md)
+[English](README.md) · [Hvad er verificeret](docs/VERIFIED.md)
 
 Læser dit Xolta-batteri (solgt i Danmark af **Ebbefos Energy**) **direkte på dit lokale netværk** via Modbus TCP, uden sky, uden token og uden YAML. Data kommer hvert 10. sekund i stedet for med skyens forsinkelse på 1–2 minutter.
 
@@ -49,18 +51,27 @@ Du skal kun udfylde to ting:
 | **IP-adresse** | Controllerens faste IP-adresse fra trin 1. |
 | **Tillad at Home Assistant styrer batteriet** | Slukket (standard): kun læsning, helt ufarligt. Tændt: tilføjer overstyringen (se nedenfor). |
 
-Integrationen tester forbindelsen med det samme. Får du fejlen *"Controlleren afviste forbindelsen"*, er Modbus ikke slået til endnu (trin 2).
+Integrationen tester forbindelsen med det samme og fortæller, hvilken situation du er i:
+
+| Resultat | Betydning |
+|---|---|
+| Sat op | Modbus er åbent, og entiteterne kommer med det samme. |
+| **Modbus er ikke åbnet endnu** | Controlleren svarer på adressen, men ikke på Modbus. Dialogen viser mailen til Ebbefos med din IP-adresse udfyldt. Vælg *Gem og vent*: Home Assistant tester selv videre og starter, når Modbus åbnes. Indtil da står der en besked under *Indstillinger → Reparationer*. |
+| Intet svarer | Forkert IP-adresse, batteriet er slukket, eller Home Assistant kan ikke nå netværket. |
+
+Bliver Modbus lukket igen senere (fx af en softwareopdatering fra Xolta), kommer der en besked under Reparationer efter 10 minutter. Den forsvinder af sig selv, når Modbus svarer igen.
 
 Alt andet har fornuftige standardværdier og kan ændres under **Konfigurer**: skrive-kontakten, læseinterval (10 s), gentagelsesinterval (20 s), port (502) og unit-id (1). IP-adressen kan ændres via **⋮ → Omkonfigurer**.
 
 ## Det får du
 
+Kun værdier, der er set virke på et rigtigt batteri, er med ([detaljer](docs/VERIFIED.md)).
+
 **Altid (kun læsning):**
 - Opladning (%), **Effekt** (kW; *positiv = aflader, negativ = lader*)
 - **Energi opladet / afladet** (kWh), klar til Energi-dashboardet uden hjælpere
-- Tilstand, enhedstilstand og klyngetilstand (som tekst)
-- Fuldt opladet / fuldt afladet, cellebalancering nødvendig
-- Diagnostik: DC-spænding/-strøm, celletemperatur og -spænding (min/maks), lade-/afladegrænse, netfrekvens, AC-spænding/-strøm (L2/L3 er slået fra som standard, de fleste har ét fasesæt)
+- Tilstand (hviler / starter / kører / fejl)
+- Diagnostik: DC-spænding/-strøm, celletemperatur og -spænding (min/maks), lade-/afladegrænse, netfrekvens, AC-spænding/-strøm
 
 **Med styring slået til:**
 - **Overstyring** (valg): *Auto (skyen styrer)* · *Stop – brug ikke batteriet* · *Eget forbrug (sælg ikke)*
@@ -77,7 +88,7 @@ Batteriet styres normalt af Ebbefos' sky (plan, arbitrage, skema). Integrationen
 - **Auto** skriver **ingenting**. Integrationen holder bare op med at gentage, og skyen tager selv styringen tilbage inden for få minutter.
 - Genstarter Home Assistant, eller slukker du for styringen, står overstyringen altid på **Auto**. Batteriet bliver aldrig "glemt" i Stop.
 
-> Driftsform-registret (sensoren *Modbus-driftsform*, slået fra som standard) viser 0, også når skyen styrer. Brug **Effekt** til at se, hvad batteriet faktisk gør.
+> Batteriets eget driftsform-register viser 0, også når skyen styrer, og vises derfor ikke. Brug **Effekt** til at se, hvad batteriet faktisk gør.
 
 ## Eksempler
 
@@ -112,9 +123,9 @@ entities:
 ## Fejlsøgning
 | Problem | Løsning |
 |---|---|
-| "Controlleren afviste forbindelsen" | Modbus er ikke slået til endnu. Send mailen i trin 2. |
-| "Intet svar fra adressen" | Forkert IP-adresse, controlleren har fået en ny IP (lav DHCP-reservation), eller Home Assistant kan ikke nå netværket (VLAN/firewall). |
-| Entiteterne bliver "utilgængelige" efter en softwareopdatering fra Xolta | Tjek, om port 502 stadig er åben. Ellers bed supporten slå Modbus til igen. |
+| "Modbus er ikke åbnet endnu" | Send mailen i trin 2, og vælg *Gem og vent*. |
+| "Intet svarer på denne adresse" | Forkert IP-adresse, controlleren har fået en ny IP (lav DHCP-reservation), eller Home Assistant kan ikke nå netværket (VLAN/firewall). |
+| Beskeden "Modbus er ikke åbent" under Reparationer, efter det har virket | Sandsynligvis lukket af en softwareopdatering fra Xolta. Bed supporten slå Modbus til igen; integrationen starter selv igen. |
 | "Overstyring følges ikke" tænder | Skyen har taget over. Vælg overstyringen igen, eller tjek indstillingerne på Ebbefos-hjemmesiden. |
 
 Diagnostik kan hentes under enheden (⋮ → Download diagnostik). IP-adressen er fjernet fra filen.

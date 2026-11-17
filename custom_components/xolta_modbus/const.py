@@ -2,9 +2,18 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
 from typing import Final
 
 DOMAIN: Final = "xolta_modbus"
+README_URL: Final = (
+    "https://github.com/Haulund83/home-assistant_xolta-modbus#before-you-start-3-steps"
+)
+
+# Repair issues (connection lost for a while, or Modbus not open)
+ISSUE_MODBUS_CLOSED: Final = "modbus_closed"
+ISSUE_UNREACHABLE: Final = "controller_unreachable"
+ISSUE_AFTER: Final = timedelta(minutes=10)
 
 CONF_ALLOW_WRITE: Final = "allow_write"
 CONF_UNIT_ID: Final = "unit_id"

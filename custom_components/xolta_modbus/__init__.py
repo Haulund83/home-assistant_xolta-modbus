@@ -21,11 +21,11 @@ from .const import (
     WRITE_ENTITY_KEYS,
 )
 from .control import OverrideController
-from .coordinator import XoltaCoordinator
+from .coordinator import XoltaCoordinator, clear_issues
 from .modbus import XoltaModbusClient
 
-READ_PLATFORMS = [Platform.SENSOR, Platform.BINARY_SENSOR]
-WRITE_PLATFORMS = [Platform.SELECT, Platform.NUMBER]
+READ_PLATFORMS = [Platform.SENSOR]
+WRITE_PLATFORMS = [Platform.BINARY_SENSOR, Platform.SELECT, Platform.NUMBER]
 
 
 @dataclass
@@ -88,6 +88,11 @@ async def async_unload_entry(hass: HomeAssistant, entry: XoltaConfigEntry) -> bo
             runtime.controller.async_shutdown()
         await runtime.client.close()
     return unloaded
+
+
+async def async_remove_entry(hass: HomeAssistant, entry: XoltaConfigEntry) -> None:
+    """Remove repair issues that belong to a deleted entry."""
+    clear_issues(hass, entry)
 
 
 async def _async_reload_on_change(hass: HomeAssistant, entry: XoltaConfigEntry) -> None:

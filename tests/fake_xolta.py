@@ -119,16 +119,21 @@ class FakeClient:
     def __init__(self, fake: FakeXolta) -> None:
         """Bind to the fake controller."""
         self.fake = fake
-        self.offline = False
+        self.host = "127.0.0.1"
+        # None = online, "refused" = Modbus closed (port 502 refused), "timeout" = no answer
+        self.offline: str | None = None
 
     def _call(self, pdu: bytes) -> bytes:
         from custom_components.xolta_modbus.modbus import (
             XoltaConnectionError,
+            XoltaConnectionRefused,
             XoltaExceptionResponse,
         )
 
+        if self.offline == "refused":
+            raise XoltaConnectionRefused("refused")
         if self.offline:
-            raise XoltaConnectionError("offline")
+            raise XoltaConnectionError("timeout")
         reply = self.fake._process(pdu)
         if reply[0] & 0x80:
             raise XoltaExceptionResponse(pdu[0], reply[1])

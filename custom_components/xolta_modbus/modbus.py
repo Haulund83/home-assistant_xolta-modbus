@@ -42,6 +42,45 @@ class XoltaExceptionResponse(XoltaModbusError):
         self.code = code
 
 
+# Other ports the Xolta site controller answers on (SSH and VNC, verified on a
+# live controller). Used only to tell "device is there but Modbus is closed"
+# apart from "nothing at this address". No data is sent.
+PRESENCE_PORTS = (22, 5900)
+
+
+async def async_host_present(host: str, timeout: float = 3.0) -> bool:
+    """Return True if a device answers at `host` on a presence port.
+
+    An open port or a refused connection both prove that a device is there;
+    a timeout on every port means nothing answers.
+    """
+    for port in PRESENCE_PORTS:
+        try:
+            _reader, writer = await asyncio.wait_for(asyncio.open_connection(host, port), timeout)
+        except ConnectionRefusedError:
+            return True
+        except (TimeoutError, OSError):
+            continue
+        writer.close()
+        with contextlib.suppress(OSError):
+            await writer.wait_closed()
+        return True
+    return False
+
+
+async def async_modbus_closed(host: str, error: XoltaModbusError) -> bool:
+    """Decide whether a failed Modbus connection means "Modbus is not open".
+
+    True when the controller itself is reachable (port 502 refused, or another
+    port answers) but Modbus does not work.
+    """
+    if isinstance(error, XoltaConnectionRefused):
+        return True
+    if isinstance(error, XoltaConnectionError):
+        return await async_host_present(host)
+    return False
+
+
 class XoltaModbusClient:
     """Keeps one TCP connection open and serialises all requests."""
 

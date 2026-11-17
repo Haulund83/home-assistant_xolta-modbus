@@ -19,7 +19,6 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfFrequency,
     UnitOfPower,
-    UnitOfReactivePower,
     UnitOfTemperature,
 )
 from homeassistant.core import HomeAssistant, callback
@@ -28,7 +27,7 @@ from homeassistant.util import dt as dt_util
 
 from . import XoltaConfigEntry
 from .entity import XoltaControlEntity, XoltaEntity
-from .registers import CLUSTER_STATE_CODES, MODE_CODES, STATE_CODES, UNIT_STATE_CODES
+from .registers import STATE_CODES
 
 PARALLEL_UPDATES = 0
 MAX_INTEGRATION_GAP = timedelta(minutes=5)
@@ -58,30 +57,24 @@ def _num(
     )
 
 
-def _enum(key: str, codes: dict[int, str], *, enabled: bool = True) -> SensorEntityDescription:
+def _enum(key: str, codes: dict[int, str]) -> SensorEntityDescription:
     return SensorEntityDescription(
         key=key,
         translation_key=key,
         device_class=SensorDeviceClass.ENUM,
         options=list(codes.values()),
         entity_category=DIAG,
-        entity_registry_enabled_default=enabled,
     )
 
 
 V, A, KW = UnitOfElectricPotential.VOLT, UnitOfElectricCurrent.AMPERE, UnitOfPower.KILO_WATT
 SD = SensorDeviceClass
 
+# Only values that have been checked against a live controller are exposed
+# (see docs/VERIFIED.md). Everything else is kept in diagnostics only.
 SENSORS: tuple[SensorEntityDescription, ...] = (
     _num("state_of_charge", PERCENTAGE, SD.BATTERY, 1, diagnostic=False),
     _num("power", KW, SD.POWER, 2, diagnostic=False),
-    _num(
-        "reactive_power",
-        UnitOfReactivePower.KILO_VOLT_AMPERE_REACTIVE,
-        SD.REACTIVE_POWER,
-        2,
-        enabled=False,
-    ),
     _num("dc_voltage", V, SD.VOLTAGE, 1),
     _num("dc_current", A, SD.CURRENT, 1),
     _num("cell_temperature_min", UnitOfTemperature.CELSIUS, SD.TEMPERATURE, 1),
@@ -92,15 +85,8 @@ SENSORS: tuple[SensorEntityDescription, ...] = (
     _num("discharge_limit", KW, SD.POWER, 1),
     _num("grid_frequency", UnitOfFrequency.HERTZ, SD.FREQUENCY, 2),
     _num("ac_voltage_l1", V, SD.VOLTAGE, 1),
-    _num("ac_voltage_l2", V, SD.VOLTAGE, 1, enabled=False),
-    _num("ac_voltage_l3", V, SD.VOLTAGE, 1, enabled=False),
     _num("ac_current_l1", A, SD.CURRENT, 1),
-    _num("ac_current_l2", A, SD.CURRENT, 1, enabled=False),
-    _num("ac_current_l3", A, SD.CURRENT, 1, enabled=False),
     _enum("state", STATE_CODES),
-    _enum("unit_state", UNIT_STATE_CODES),
-    _enum("cluster_state", CLUSTER_STATE_CODES),
-    _enum("mode", MODE_CODES, enabled=False),
 )
 
 

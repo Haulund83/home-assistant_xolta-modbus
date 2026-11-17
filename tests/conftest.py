@@ -29,6 +29,24 @@ def auto_enable_custom_integrations(enable_custom_integrations, socket_enabled):
     return
 
 
+@pytest.fixture(autouse=True)
+def fail_on_deprecation_reports(caplog: pytest.LogCaptureFixture):
+    """Fail if Home Assistant reports that this integration uses something deprecated.
+
+    HA logs "Detected that custom integration 'xolta_modbus' ..." long before an
+    API is removed. The weekly CI run against the newest HA turns that into a
+    failing test, so we can fix it before it breaks for users.
+    """
+    yield
+    reports = [
+        r.getMessage()
+        for r in caplog.records
+        if f"custom integration '{DOMAIN}'" in r.getMessage()
+        and ("deprecat" in r.getMessage().lower() or "will stop working" in r.getMessage())
+    ]
+    assert not reports, reports
+
+
 @pytest.fixture
 async def fake_xolta() -> AsyncGenerator[FakeXolta]:
     """Start a fake controller on a free localhost port."""

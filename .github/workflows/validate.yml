@@ -25,5 +25,3 @@ jobs:
       - uses: hacs/action@main
         with:
           category: integration
-          # Remove "brands" once the integration has brand images.
-          ignore: brands

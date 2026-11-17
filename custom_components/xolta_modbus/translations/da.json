@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Xolta batteri (lokal Modbus)",
-        "description": "Indtast IP-adressen på Xoltas site-controller. Giv den først en fast IP-adresse (DHCP-reservation) i din router. Modbus TCP skal slås til af Xolta/Ebbefos' support; se README for den mail, du skal sende.",
+        "description": "Indtast IP-adressen på Xoltas site-controller. Giv den først en fast IP-adresse (DHCP-reservation) i din router.",
         "data": {
           "host": "IP-adresse",
           "allow_write": "Tillad at Home Assistant styrer batteriet"
@@ -13,6 +13,14 @@
           "allow_write": "Slukket = kun læsning (sikkert). Tændt = giver en overstyring (Auto / Stop / Eget forbrug), der skriver til batteriet. Kan ændres senere under Konfigurer."
         }
       },
+      "modbus_closed": {
+        "title": "Modbus er ikke åbnet endnu",
+        "description": "Batteriets controller svarer på **{host}**, men Modbus er ikke åbnet. Det kan kun Ebbefos/Xoltas support gøre. Send denne mail til **support@ebbefosenergy.dk**:\n\n> **Emne:** Aktivering af Modbus TCP\n>\n> Hej Ebbefos Energy\n>\n> Jeg har et Xolta-batteri (konto: *din e-mail i Ebbefos-appen*, site-controller: *SCR-nummeret fra din router*, IP-adresse: {host}).\n>\n> Vil I slå Modbus TCP-serveren til på site-controlleren (port 502)? Jeg vil læse batteriets data lokalt i Home Assistant. IP-adressen er reserveret i min router.\n\nDu kan gemme nu: Home Assistant bliver ved med at teste og starter selv, når Modbus er åbnet. Indtil da står der en besked under Reparationer.",
+        "menu_options": {
+          "retry": "Test igen (Ebbefos har svaret)",
+          "wait": "Gem og vent (Home Assistant tester selv videre)"
+        }
+      },
       "reconfigure": {
         "title": "Skift IP-adresse",
         "data": { "host": "IP-adresse" },
@@ -20,8 +28,8 @@
       }
     },
     "error": {
-      "cannot_connect": "Intet svar fra adressen på port 502. Tjek IP-adressen, og at Home Assistant kan nå den.",
-      "connection_refused": "Controlleren afviste forbindelsen. Modbus TCP er sandsynligvis ikke slået til endnu; bed Xolta/Ebbefos' support om at slå det til (se README).",
+      "cannot_connect": "Intet svarer på denne adresse. Tjek IP-adressen, at batteriet er tændt, og at Home Assistant kan nå netværket.",
+      "modbus_closed": "Controlleren svarer, men Modbus er ikke åbnet. Bed Ebbefos/Xoltas support om at åbne det (se README).",
       "not_xolta": "Noget svarede, men det ligner ikke en Xolta site-controller.",
       "unknown": "Uventet fejl. Se loggen."
     },
@@ -51,11 +59,20 @@
       }
     }
   },
+  "issues": {
+    "modbus_closed": {
+      "title": "Xolta batteri: Modbus er ikke åbent",
+      "description": "Batteriets controller svarer på {host}, men Modbus gør ikke. Enten er Modbus ikke åbnet endnu, eller også er det blevet lukket (fx af en softwareopdatering fra Xolta).\n\nBed Ebbefos/Xoltas support (support@ebbefosenergy.dk) om at slå Modbus TCP-serveren til på port 502. I README er der en mail, du kan kopiere.\n\nHome Assistant bliver ved med at teste, og beskeden forsvinder af sig selv, når Modbus svarer igen."
+    },
+    "controller_unreachable": {
+      "title": "Xolta batteri: intet svar fra {host}",
+      "description": "Intet svarer på {host}. Tjek at batteriet er tændt, at controlleren stadig har denne IP-adresse (brug en DHCP-reservation), og at Home Assistant kan nå netværket. Er IP-adressen ændret, så brug Omkonfigurer på integrationen.\n\nBeskeden forsvinder af sig selv, når controlleren svarer igen."
+    }
+  },
   "entity": {
     "sensor": {
       "state_of_charge": { "name": "Opladning" },
       "power": { "name": "Effekt" },
-      "reactive_power": { "name": "Reaktiv effekt" },
       "dc_voltage": { "name": "DC-spænding" },
       "dc_current": { "name": "DC-strøm" },
       "cell_temperature_min": { "name": "Celletemperatur min" },
@@ -65,12 +82,8 @@
       "charge_limit": { "name": "Ladegrænse" },
       "discharge_limit": { "name": "Afladegrænse" },
       "grid_frequency": { "name": "Netfrekvens" },
-      "ac_voltage_l1": { "name": "AC-spænding L1" },
-      "ac_voltage_l2": { "name": "AC-spænding L2" },
-      "ac_voltage_l3": { "name": "AC-spænding L3" },
-      "ac_current_l1": { "name": "AC-strøm L1" },
-      "ac_current_l2": { "name": "AC-strøm L2" },
-      "ac_current_l3": { "name": "AC-strøm L3" },
+      "ac_voltage_l1": { "name": "AC-spænding" },
+      "ac_current_l1": { "name": "AC-strøm" },
       "energy_charged": { "name": "Energi opladet" },
       "energy_discharged": { "name": "Energi afladet" },
       "override_ends": { "name": "Overstyring slutter" },
@@ -82,40 +95,9 @@
           "running": "Kører",
           "fault": "Fejl"
         }
-      },
-      "unit_state": {
-        "name": "Enhedstilstand",
-        "state": {
-          "out_of_service": "Ude af drift",
-          "auto_charge": "Autoladning (celler lave)",
-          "cell_balancing": "Cellebalancering",
-          "balance_recovery": "Balance-genopretning",
-          "cluster": "Klynge (normal)"
-        }
-      },
-      "cluster_state": {
-        "name": "Klyngetilstand",
-        "state": {
-          "all_resting": "Alle hviler",
-          "running": "Kører",
-          "fault": "Fejl"
-        }
-      },
-      "mode": {
-        "name": "Modbus-driftsform (rapporteret)",
-        "state": {
-          "stop": "Stop",
-          "self_consumption": "Maks. eget forbrug",
-          "passive": "Passiv",
-          "local": "Lokal"
-        }
       }
     },
     "binary_sensor": {
-      "fully_charged": { "name": "Fuldt opladet" },
-      "fully_discharged": { "name": "Fuldt afladet" },
-      "cell_balancing_needed": { "name": "Cellebalancering nødvendig" },
-      "auto_cell_balancing": { "name": "Automatisk cellebalancering" },
       "override_contested": { "name": "Overstyring følges ikke" }
     },
     "select": {

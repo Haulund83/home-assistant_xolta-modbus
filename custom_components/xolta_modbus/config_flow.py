@@ -28,10 +28,10 @@ from .const import (
     DOMAIN,
 )
 from .modbus import (
-    XoltaConnectionRefused,
     XoltaExceptionResponse,
     XoltaModbusClient,
     XoltaModbusError,
+    async_modbus_closed,
 )
 from .registers import MAIN_BLOCK, decode
 
@@ -48,17 +48,18 @@ DEFAULT_OPTIONS: dict[str, Any] = {
 async def validate_connection(host: str, port: int, unit_id: int) -> str | None:
     """Read the main block and check that the state of charge is plausible.
 
-    Returns an error key for the form, or None when the controller answers.
+    Returns an error key, or None when the controller answers:
+    - "modbus_closed": a device answers at the address, but not on Modbus
+    - "cannot_connect": nothing answers at the address
+    - "not_xolta": Modbus answers, but not like a Xolta controller
     """
     client = XoltaModbusClient(host, port, unit_id)
     try:
         main = await client.read_input_registers(*MAIN_BLOCK)
-    except XoltaConnectionRefused:
-        return "connection_refused"
     except XoltaExceptionResponse:
         return "not_xolta"
-    except XoltaModbusError:
-        return "cannot_connect"
+    except XoltaModbusError as err:
+        return "modbus_closed" if await async_modbus_closed(host, err) else "cannot_connect"
     except Exception:
         _LOGGER.exception("Unexpected error while validating %s", host)
         return "unknown"
@@ -79,22 +80,30 @@ class XoltaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     VERSION = 1
 
+    def __init__(self) -> None:
+        """Remember the input while the user waits for Modbus to be opened."""
+        self._host = ""
+        self._allow_write = False
+
+    def _create(self) -> ConfigFlowResult:
+        return self.async_create_entry(
+            title="Xolta battery",
+            data={CONF_HOST: self._host},
+            options={**DEFAULT_OPTIONS, CONF_ALLOW_WRITE: self._allow_write},
+        )
+
     async def async_step_user(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
         """Ask for the IP address and the write switch."""
         errors: dict[str, str] = {}
         if user_input is not None:
-            host = user_input[CONF_HOST].strip()
-            self._async_abort_entries_match({CONF_HOST: host})
-            error = await validate_connection(host, DEFAULT_PORT, DEFAULT_UNIT_ID)
+            self._host = user_input[CONF_HOST].strip()
+            self._allow_write = user_input[CONF_ALLOW_WRITE]
+            self._async_abort_entries_match({CONF_HOST: self._host})
+            error = await validate_connection(self._host, DEFAULT_PORT, DEFAULT_UNIT_ID)
             if error is None:
-                return self.async_create_entry(
-                    title="Xolta battery",
-                    data={CONF_HOST: host},
-                    options={
-                        **DEFAULT_OPTIONS,
-                        CONF_ALLOW_WRITE: user_input[CONF_ALLOW_WRITE],
-                    },
-                )
+                return self._create()
+            if error == "modbus_closed":
+                return await self.async_step_modbus_closed()
             errors["base"] = error
 
         schema = _host_schema().extend(
@@ -105,6 +114,38 @@ class XoltaConfigFlow(ConfigFlow, domain=DOMAIN):
             data_schema=self.add_suggested_values_to_schema(schema, user_input or {}),
             errors=errors,
         )
+
+    async def async_step_modbus_closed(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """The controller is there, but Modbus is not open: explain and offer to wait."""
+        return self.async_show_menu(
+            step_id="modbus_closed",
+            menu_options=["retry", "wait"],
+            description_placeholders={"host": self._host},
+        )
+
+    async def async_step_retry(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Test again (e.g. after Ebbefos answered)."""
+        error = await validate_connection(self._host, DEFAULT_PORT, DEFAULT_UNIT_ID)
+        if error is None:
+            return self._create()
+        if error == "modbus_closed":
+            return await self.async_step_modbus_closed()
+        return self.async_show_form(
+            step_id="user",
+            data_schema=self.add_suggested_values_to_schema(
+                _host_schema().extend(
+                    {vol.Required(CONF_ALLOW_WRITE, default=False): selector.BooleanSelector()}
+                ),
+                {CONF_HOST: self._host, CONF_ALLOW_WRITE: self._allow_write},
+            ),
+            errors={"base": error},
+        )
+
+    async def async_step_wait(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
+        """Save now; Home Assistant keeps testing and starts by itself once Modbus opens."""
+        return self._create()
 
     async def async_step_reconfigure(
         self, user_input: dict[str, Any] | None = None

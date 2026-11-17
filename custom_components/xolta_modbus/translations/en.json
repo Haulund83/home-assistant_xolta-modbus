@@ -3,7 +3,7 @@
     "step": {
       "user": {
         "title": "Xolta battery (local Modbus)",
-        "description": "Enter the IP address of the Xolta site controller. Give it a fixed IP address (DHCP reservation) in your router first. Modbus TCP must be enabled by Xolta/Ebbefos support; see the README for the e-mail to send.",
+        "description": "Enter the IP address of the Xolta site controller. Give it a fixed IP address (DHCP reservation) in your router first.",
         "data": {
           "host": "IP address",
           "allow_write": "Allow Home Assistant to control the battery"
@@ -13,6 +13,14 @@
           "allow_write": "Off = read only (safe). On = adds an override (Auto / Stop / Self-consumption) that writes to the battery. You can change this later under Configure."
         }
       },
+      "modbus_closed": {
+        "title": "Modbus is not open yet",
+        "description": "The battery controller answers at **{host}**, but Modbus is not open. Only Ebbefos/Xolta support can open it. Send this e-mail to **support@ebbefosenergy.dk**:\n\n> **Subject:** Enable Modbus TCP\n>\n> Hello Ebbefos Energy,\n>\n> I have a Xolta battery (account: *your e-mail in the Ebbefos app*, site controller: *SCR-number from your router*, IP address: {host}).\n>\n> Could you enable the Modbus TCP server on the site controller (port 502)? I want to read the battery locally in Home Assistant. The IP address is reserved in my router.\n\nYou can save now: Home Assistant keeps checking and starts by itself once Modbus is open, and a repair notice is shown until then.",
+        "menu_options": {
+          "retry": "Test again (Ebbefos has answered)",
+          "wait": "Save and wait (Home Assistant keeps checking)"
+        }
+      },
       "reconfigure": {
         "title": "Change IP address",
         "data": { "host": "IP address" },
@@ -20,8 +28,8 @@
       }
     },
     "error": {
-      "cannot_connect": "No answer from this address on port 502. Check the IP address and that Home Assistant can reach it.",
-      "connection_refused": "The controller refused the connection. Modbus TCP is probably not enabled yet; ask Xolta/Ebbefos support to enable it (see the README).",
+      "cannot_connect": "Nothing answers at this address. Check the IP address, that the battery is on, and that Home Assistant can reach that network.",
+      "modbus_closed": "The controller answers, but Modbus is not open. Ask Ebbefos/Xolta support to open it (see the README).",
       "not_xolta": "Something answered, but it does not look like a Xolta site controller.",
       "unknown": "Unexpected error. See the log."
     },
@@ -51,11 +59,20 @@
       }
     }
   },
+  "issues": {
+    "modbus_closed": {
+      "title": "Xolta battery: Modbus is not open",
+      "description": "The battery controller answers at {host}, but Modbus does not. Either Modbus has not been opened yet, or it was closed (for example by a Xolta software update).\n\nAsk Ebbefos/Xolta support (support@ebbefosenergy.dk) to enable the Modbus TCP server on port 502. The README has an e-mail you can copy.\n\nHome Assistant keeps checking, and this notice disappears by itself once Modbus answers again."
+    },
+    "controller_unreachable": {
+      "title": "Xolta battery: no answer from {host}",
+      "description": "Nothing answers at {host}. Check that the battery is on, that the controller still has this IP address (use a DHCP reservation), and that Home Assistant can reach that network. If the IP address changed, use Reconfigure on the integration.\n\nThis notice disappears by itself once the controller answers again."
+    }
+  },
   "entity": {
     "sensor": {
       "state_of_charge": { "name": "State of charge" },
       "power": { "name": "Power" },
-      "reactive_power": { "name": "Reactive power" },
       "dc_voltage": { "name": "DC voltage" },
       "dc_current": { "name": "DC current" },
       "cell_temperature_min": { "name": "Cell temperature min" },
@@ -65,12 +82,8 @@
       "charge_limit": { "name": "Charge limit" },
       "discharge_limit": { "name": "Discharge limit" },
       "grid_frequency": { "name": "Grid frequency" },
-      "ac_voltage_l1": { "name": "AC voltage L1" },
-      "ac_voltage_l2": { "name": "AC voltage L2" },
-      "ac_voltage_l3": { "name": "AC voltage L3" },
-      "ac_current_l1": { "name": "AC current L1" },
-      "ac_current_l2": { "name": "AC current L2" },
-      "ac_current_l3": { "name": "AC current L3" },
+      "ac_voltage_l1": { "name": "AC voltage" },
+      "ac_current_l1": { "name": "AC current" },
       "energy_charged": { "name": "Energy charged" },
       "energy_discharged": { "name": "Energy discharged" },
       "override_ends": { "name": "Override ends" },
@@ -82,40 +95,9 @@
           "running": "Running",
           "fault": "Fault"
         }
-      },
-      "unit_state": {
-        "name": "Unit state",
-        "state": {
-          "out_of_service": "Out of service",
-          "auto_charge": "Auto charge (cells low)",
-          "cell_balancing": "Cell balancing",
-          "balance_recovery": "Balance recovery",
-          "cluster": "Cluster (normal)"
-        }
-      },
-      "cluster_state": {
-        "name": "Cluster state",
-        "state": {
-          "all_resting": "All resting",
-          "running": "Running",
-          "fault": "Fault"
-        }
-      },
-      "mode": {
-        "name": "Modbus mode (reported)",
-        "state": {
-          "stop": "Stop",
-          "self_consumption": "Max self-consumption",
-          "passive": "Passive",
-          "local": "Local"
-        }
       }
     },
     "binary_sensor": {
-      "fully_charged": { "name": "Fully charged" },
-      "fully_discharged": { "name": "Fully discharged" },
-      "cell_balancing_needed": { "name": "Cell balancing needed" },
-      "auto_cell_balancing": { "name": "Auto cell balancing" },
       "override_contested": { "name": "Override not followed" }
     },
     "select": {
