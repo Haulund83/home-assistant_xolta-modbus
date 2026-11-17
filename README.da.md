@@ -92,6 +92,8 @@ Batteriet styres normalt af Ebbefos' sky (plan, arbitrage, skema). Integrationen
 
 ## Eksempler
 
+Entitets-id'erne følger det sprog, Home Assistant havde, da integrationen blev tilføjet. Eksemplerne bruger engelske id'er; i en dansk installation hedder fx opladningen `sensor.xolta_modbus_opladning` og overstyringen `select.xolta_modbus_overstyring`. Se id'erne på enhedens side.
+
 **Stop batteriet, mens elbilen lader:** Importér blueprintet
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml) (Indstillinger → Automationer → Blueprints → Importér, indsæt GitHub-linket til filen).
 
@@ -99,7 +101,7 @@ Batteriet styres normalt af Ebbefos' sky (plan, arbitrage, skema). Integrationen
 ```yaml
 action: xolta_modbus.set_override
 target:
-  entity_id: select.xolta_battery_override
+  entity_id: select.xolta_modbus_override
 data:
   mode: self_consumption   # auto | stop | self_consumption
   duration: 2              # timer (valgfri)
@@ -110,12 +112,12 @@ data:
 type: entities
 title: Batteri
 entities:
-  - sensor.xolta_battery_state_of_charge
-  - sensor.xolta_battery_power
-  - sensor.xolta_battery_state
-  - select.xolta_battery_override
-  - sensor.xolta_battery_override_ends
-  - binary_sensor.xolta_battery_override_not_followed
+  - sensor.xolta_modbus_state_of_charge
+  - sensor.xolta_modbus_power
+  - sensor.xolta_modbus_state
+  - select.xolta_modbus_override
+  - sensor.xolta_modbus_override_ends
+  - binary_sensor.xolta_modbus_override_not_followed
 ```
 
 **Energi-dashboard:** Brug *Energi opladet* som "energi ind i batteriet" og *Energi afladet* som "energi ud af batteriet".

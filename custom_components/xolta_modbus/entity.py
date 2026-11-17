@@ -16,7 +16,7 @@ def device_info(entry: ConfigEntry) -> DeviceInfo:
     """One device per config entry (one site controller)."""
     return DeviceInfo(
         identifiers={(DOMAIN, entry.entry_id)},
-        name="Xolta battery",
+        name="Xolta Modbus",
         manufacturer="Xolta",
         model="Site controller (Modbus TCP)",
     )

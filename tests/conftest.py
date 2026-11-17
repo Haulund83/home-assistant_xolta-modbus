@@ -60,7 +60,7 @@ def make_entry(port: int, allow_write: bool) -> MockConfigEntry:
     """Config entry pointing at the fake controller."""
     return MockConfigEntry(
         domain=DOMAIN,
-        title="Xolta battery",
+        title="Xolta Modbus",
         data={CONF_HOST: "127.0.0.1"},
         options={
             CONF_ALLOW_WRITE: allow_write,

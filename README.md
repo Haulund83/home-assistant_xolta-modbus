@@ -107,6 +107,8 @@ The battery is normally driven by the Ebbefos cloud (schedule, arbitrage, plans)
 
 ## Examples
 
+Entity IDs follow the language Home Assistant had when the integration was added. The examples use English IDs; in e.g. a Danish installation the state of charge is `sensor.xolta_modbus_opladning`. Check the IDs on the device page.
+
 **Stop the battery while the EV charges:** import the blueprint
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml).
 
@@ -114,7 +116,7 @@ The battery is normally driven by the Ebbefos cloud (schedule, arbitrage, plans)
 ```yaml
 action: xolta_modbus.set_override
 target:
-  entity_id: select.xolta_battery_override
+  entity_id: select.xolta_modbus_override
 data:
   mode: self_consumption   # auto | stop | self_consumption
   duration: 2              # hours (optional)
@@ -125,12 +127,12 @@ data:
 type: entities
 title: Battery
 entities:
-  - sensor.xolta_battery_state_of_charge
-  - sensor.xolta_battery_power
-  - sensor.xolta_battery_state
-  - select.xolta_battery_override
-  - sensor.xolta_battery_override_ends
-  - binary_sensor.xolta_battery_override_not_followed
+  - sensor.xolta_modbus_state_of_charge
+  - sensor.xolta_modbus_power
+  - sensor.xolta_modbus_state
+  - select.xolta_modbus_override
+  - sensor.xolta_modbus_override_ends
+  - binary_sensor.xolta_modbus_override_not_followed
 ```
 
 **Energy dashboard:** use *Energy charged* as "energy going in to the battery" and *Energy discharged* as "energy coming out of the battery".

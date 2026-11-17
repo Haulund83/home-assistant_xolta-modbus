@@ -87,7 +87,7 @@ class XoltaConfigFlow(ConfigFlow, domain=DOMAIN):
 
     def _create(self) -> ConfigFlowResult:
         return self.async_create_entry(
-            title="Xolta battery",
+            title="Xolta Modbus",
             data={CONF_HOST: self._host},
             options={**DEFAULT_OPTIONS, CONF_ALLOW_WRITE: self._allow_write},
         )

@@ -18,14 +18,14 @@ from custom_components.xolta_modbus.const import CONF_ALLOW_WRITE, DOMAIN
 from .conftest import make_entry
 from .fake_xolta import FakeClient, FakeXolta
 
-SOC = "sensor.xolta_battery_state_of_charge"
-POWER = "sensor.xolta_battery_power"
-STATE = "sensor.xolta_battery_state"
-OVERRIDE = "select.xolta_battery_override"
-DURATION = "number.xolta_battery_override_duration"
-ENDS = "sensor.xolta_battery_override_ends"
-CONTESTED = "binary_sensor.xolta_battery_override_not_followed"
-DISCHARGED = "sensor.xolta_battery_energy_discharged"
+SOC = "sensor.xolta_modbus_state_of_charge"
+POWER = "sensor.xolta_modbus_power"
+STATE = "sensor.xolta_modbus_state"
+OVERRIDE = "select.xolta_modbus_override"
+DURATION = "number.xolta_modbus_override_duration"
+ENDS = "sensor.xolta_modbus_override_ends"
+CONTESTED = "binary_sensor.xolta_modbus_override_not_followed"
+DISCHARGED = "sensor.xolta_modbus_energy_discharged"
 
 
 async def _tick(hass: HomeAssistant, freezer: FrozenDateTimeFactory, seconds: float) -> None:
