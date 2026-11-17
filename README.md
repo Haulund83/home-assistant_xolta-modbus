@@ -52,7 +52,7 @@ Tips:
 - Please don't publish Xolta's PDF. The integration already knows the registers.
 
 ### 3. Install
-**HACS (recommended):** search for *Xolta Battery (local Modbus)* and install. Until it is in the HACS default list: HACS → ⋮ → *Custom repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Restart Home Assistant.
+**Marketplace / HACS (recommended):** search for *Xolta Battery (local Modbus)* and install. Until it is in the default list, add it as a custom repository: HACS → ⋮ → *Custom repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Restart Home Assistant.
 
 **Manual:** copy `custom_components/xolta_modbus` to `config/custom_components/` and restart.
 

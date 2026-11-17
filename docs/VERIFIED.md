@@ -37,11 +37,12 @@ covered by tests; compare with your own meter for a few days if you rely on it.
 These writes were verified from Home Assistant (YAML Modbus) on the test system.
 The integration sends the same writes; its own live run is listed below once done.
 
-| Integration live run | Result |
+| Integration live run (17 Nov 2026, v0.1.0 code) | Result |
 |---|---|
-| Stop via the Override select | pending |
-| Self-consumption via the Override select | pending |
-| Auto / expiry | pending |
+| Stop (`set_override`, 3 min) | Power 0.52 kW → 0.00 kW within ~5 s; held at 0 while the integration repeated the write every 20 s. |
+| Expiry | Returned to Auto by itself exactly at the end time; no writes after that. |
+| Self-consumption (`set_override`) | From sleep: running after ~65 s, then a steady 0.65–0.80 kW discharge; grid import read 0.07 kW. The cloud reset the mode to 0 once; the next repeat (within 20 s) restored it. |
+| Auto (select) | Writes stopped at once; the cloud reset the mode ~3.5 min later and continued its own plan. |
 
 ## Connection checks
 

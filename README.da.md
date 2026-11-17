@@ -37,7 +37,7 @@ Tips:
 - Del ikke Xoltas PDF offentligt. Integrationen kender allerede registrene.
 
 ### 3. Installér integrationen
-**Via HACS (anbefalet):** Søg efter *Xolta Battery (local Modbus)* i HACS og installér. Indtil den er optaget i HACS' standardliste: HACS → ⋮ → *Brugerdefinerede repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Genstart derefter Home Assistant.
+**Via Marketplace / HACS (anbefalet):** Søg efter *Xolta Battery (local Modbus)* og installér. Indtil den er optaget i standardlisten, tilføjes den som brugerdefineret repository: HACS → ⋮ → *Brugerdefinerede repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Genstart derefter Home Assistant.
 
 **Manuelt:** Kopiér `custom_components/xolta_modbus` til din `config/custom_components/` og genstart.
 
