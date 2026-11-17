@@ -6,7 +6,7 @@
  * translation key, so it works in every language without configuration.
  */
 const CARD = "xolta-battery-card";
-const VERSION = "0.2.0";
+const VERSION = "0.2.1";
 const PLATFORM = "xolta_modbus";
 
 const TEXT = {
@@ -158,7 +158,12 @@ class XoltaBatteryCard extends HTMLElement {
     const ids = findEntities(hass, this._config.device_id);
     const extra = ["grid_power", "solar_power", "home_power"].map((k) => this._config[k]);
     const watched = [...Object.values(ids), ...extra].filter(Boolean);
-    const key = watched.map((id) => `${id}=${hass.states[id]?.state}|${hass.states[id]?.last_updated}`).join(",") + hass.language;
+    // The key includes the formatted text, so the card also redraws when Home Assistant
+    // finishes loading its translations (the state itself does not change then).
+    const key =
+      watched
+        .map((id) => `${id}=${hass.states[id]?.state}|${hass.states[id]?.last_updated}|${this._format(hass.states[id])}`)
+        .join(",") + hass.language;
     if (key === this._lastKey) return; // nothing relevant changed
     this._lastKey = key;
 

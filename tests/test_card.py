@@ -40,6 +40,12 @@ def test_card_is_valid_javascript() -> None:
     subprocess.run(["node", "--check", str(CARD_FILE)], check=True)
 
 
+@pytest.mark.skipif(shutil.which("node") is None, reason="node not installed")
+def test_card_redraws_when_translations_load() -> None:
+    """The card redraws when the formatted text changes, not only the state."""
+    subprocess.run(["node", str(Path(__file__).parent / "card_render.mjs")], check=True)
+
+
 async def test_register_skips_without_frontend(hass: HomeAssistant) -> None:
     """In a Home Assistant without the frontend (e.g. tests) nothing is registered."""
     assert await async_register_card(hass) is False
