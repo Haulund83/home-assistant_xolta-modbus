@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Xolta batteri (lokal Modbus)",
+        "title": "Ebbefos / Xolta batteri (lokal Modbus)",
         "description": "Indtast IP-adressen på Xoltas site-controller. Giv den først en fast IP-adresse (DHCP-reservation) i din router.",
         "data": {
           "host": "IP-adresse",
@@ -41,7 +41,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Indstillinger for Xolta batteri",
+        "title": "Indstillinger for Ebbefos / Xolta batteri",
         "data": {
           "allow_write": "Tillad at Home Assistant styrer batteriet",
           "scan_interval": "Læseinterval",
@@ -61,11 +61,11 @@
   },
   "issues": {
     "modbus_closed": {
-      "title": "Xolta batteri: Modbus er ikke åbent",
+      "title": "Ebbefos / Xolta batteri: Modbus er ikke åbent",
       "description": "Batteriets controller svarer på {host}, men Modbus gør ikke. Enten er Modbus ikke åbnet endnu, eller også er det blevet lukket (fx af en softwareopdatering fra Xolta).\n\nBed Ebbefos/Xoltas support (support@ebbefosenergy.dk) om at slå Modbus TCP-serveren til på port 502. I README er der en mail, du kan kopiere.\n\nHome Assistant bliver ved med at teste, og beskeden forsvinder af sig selv, når Modbus svarer igen."
     },
     "controller_unreachable": {
-      "title": "Xolta batteri: intet svar fra {host}",
+      "title": "Ebbefos / Xolta batteri: intet svar fra {host}",
       "description": "Intet svarer på {host}. Tjek at batteriet er tændt, at controlleren stadig har denne IP-adresse (brug en DHCP-reservation), og at Home Assistant kan nå netværket. Er IP-adressen ændret, så brug Omkonfigurer på integrationen.\n\nBeskeden forsvinder af sig selv, når controlleren svarer igen."
     }
   },

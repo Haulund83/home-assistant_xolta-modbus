@@ -1,6 +1,6 @@
 <img src="custom_components/xolta_modbus/brand/logo@2x.png" alt="Xolta Modbus" height="96">
 
-# Xolta batteri (lokal Modbus) til Home Assistant
+# Ebbefos / Xolta batteri (lokal Modbus) til Home Assistant
 
 [English](README.md) · [Hvad er verificeret](docs/VERIFIED.md)
 
@@ -37,12 +37,12 @@ Tips:
 - Del ikke Xoltas PDF offentligt. Integrationen kender allerede registrene.
 
 ### 3. Installér integrationen
-**Via Marketplace / HACS (anbefalet):** Søg efter *Xolta Battery (local Modbus)* og installér. Indtil den er optaget i standardlisten, tilføjes den som brugerdefineret repository: HACS → ⋮ → *Brugerdefinerede repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Genstart derefter Home Assistant.
+**Via Marketplace / HACS (anbefalet):** Søg efter *Ebbefos* eller *Xolta* (Ebbefos / Xolta Battery (local Modbus)) og installér. Indtil den er optaget i standardlisten, tilføjes den som brugerdefineret repository: HACS → ⋮ → *Brugerdefinerede repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Genstart derefter Home Assistant.
 
 **Manuelt:** Kopiér `custom_components/xolta_modbus` til din `config/custom_components/` og genstart.
 
 ## Opsætning
-*Indstillinger → Enheder og tjenester → Tilføj integration → Xolta Battery (local Modbus)*
+*Indstillinger → Enheder og tjenester → Tilføj integration → Ebbefos / Xolta Battery (local Modbus)*
 
 Du skal kun udfylde to ting:
 
@@ -90,6 +90,25 @@ Batteriet styres normalt af Ebbefos' sky (plan, arbitrage, skema). Integrationen
 - Genstarter Home Assistant, eller slukker du for styringen, står overstyringen altid på **Auto**. Batteriet bliver aldrig "glemt" i Stop.
 
 > Batteriets eget driftsform-register viser 0, også når skyen styrer, og vises derfor ikke. Brug **Effekt** til at se, hvad batteriet faktisk gør.
+
+## Batterikort
+
+Integrationen har sit eget dashboard-kort med og indlæser det automatisk; der skal ikke installeres noget ekstra. Redigér et dashboard → **Tilføj kort** → **Ebbefos / Xolta battery**. Kortet finder selv batteriet og viser:
+
+- ladetilstand, ladestatus (lader / aflader / standby) med effekt og batteriets tilstand
+- valgfrit net, sol og husets forbrug, hvis du vælger sensorer til det i kort-editoren
+- overstyringens knapper (Auto / Stop / Eget forbrug) med sluttidspunkt og en advarsel, hvis batteriet ikke følger den. **Vises kun, når styring er slået til** i integrationen (*Konfigurer → Tillad at Home Assistant styrer batteriet*); kortets *Show override* kan skjule dem igen.
+
+```yaml
+type: custom:xolta-battery-card
+# alt er valgfrit:
+grid_power: sensor.min_net_effekt
+solar_power: sensor.min_sol_effekt
+home_power: sensor.mit_husforbrug
+show_control: true
+```
+
+Vil du se hele husets energiflow, passer *Power Flow Card Plus* fra Marketplace fint ved siden af.
 
 ## Eksempler
 

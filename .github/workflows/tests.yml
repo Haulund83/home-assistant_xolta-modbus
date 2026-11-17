@@ -33,6 +33,9 @@ jobs:
         with:
           # Bump when Home Assistant requires a newer Python (the weekly run fails first).
           python-version: "3.14"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
       - run: pip install --upgrade -r requirements_test.txt
       - run: pip show homeassistant | head -2
       - run: pytest -q -W "error::DeprecationWarning:custom_components"

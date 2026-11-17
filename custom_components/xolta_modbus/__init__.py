@@ -7,8 +7,10 @@ from dataclasses import dataclass, field
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_HOST, CONF_PORT, Platform
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers import config_validation as cv, entity_registry as er
+from homeassistant.helpers.typing import ConfigType
 
+from .card import async_register_card
 from .const import (
     CONF_ALLOW_WRITE,
     CONF_REPEAT_INTERVAL,
@@ -18,11 +20,14 @@ from .const import (
     DEFAULT_REPEAT_INTERVAL,
     DEFAULT_SCAN_INTERVAL,
     DEFAULT_UNIT_ID,
+    DOMAIN,
     WRITE_ENTITY_KEYS,
 )
 from .control import OverrideController
 from .coordinator import XoltaCoordinator, clear_issues
 from .modbus import XoltaModbusClient
+
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 READ_PLATFORMS = [Platform.SENSOR]
 WRITE_PLATFORMS = [Platform.BINARY_SENSOR, Platform.SELECT, Platform.NUMBER]
@@ -39,6 +44,12 @@ class XoltaRuntimeData:
 
 
 type XoltaConfigEntry = ConfigEntry[XoltaRuntimeData]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Register the battery card once per Home Assistant start."""
+    await async_register_card(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: XoltaConfigEntry) -> bool:

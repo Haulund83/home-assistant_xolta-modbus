@@ -1,6 +1,6 @@
 <img src="custom_components/xolta_modbus/brand/logo@2x.png" alt="Xolta Modbus" height="96">
 
-# Xolta Battery (local Modbus) for Home Assistant
+# Ebbefos / Xolta Battery (local Modbus) for Home Assistant
 
 [Dansk vejledning](README.da.md) · [What has been verified](docs/VERIFIED.md)
 
@@ -52,12 +52,12 @@ Tips:
 - Please don't publish Xolta's PDF. The integration already knows the registers.
 
 ### 3. Install
-**Marketplace / HACS (recommended):** search for *Xolta Battery (local Modbus)* and install. Until it is in the default list, add it as a custom repository: HACS → ⋮ → *Custom repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Restart Home Assistant.
+**Marketplace / HACS (recommended):** search for *Ebbefos* or *Xolta* (Ebbefos / Xolta Battery (local Modbus)) and install. Until it is in the default list, add it as a custom repository: HACS → ⋮ → *Custom repositories* → `https://github.com/Haulund83/home-assistant_xolta-modbus`, type *Integration*. Restart Home Assistant.
 
 **Manual:** copy `custom_components/xolta_modbus` to `config/custom_components/` and restart.
 
 ## Setup
-*Settings → Devices & services → Add integration → Xolta Battery (local Modbus)*
+*Settings → Devices & services → Add integration → Ebbefos / Xolta Battery (local Modbus)*
 
 You only fill in two things:
 
@@ -105,6 +105,25 @@ The battery is normally driven by the Ebbefos cloud (schedule, arbitrage, plans)
 - After a Home Assistant restart, or when control is switched off, the override is always **Auto**. The battery is never left in Stop by accident.
 
 > The battery's own mode register reads 0 even while the cloud is in control, so it is not shown. Use **Power** to see what the battery is really doing.
+
+## Battery card
+
+The integration ships its own dashboard card and loads it automatically; nothing extra to install. Edit a dashboard → **Add card** → **Ebbefos / Xolta battery**. It finds the battery by itself and shows:
+
+- state of charge, charging status (charging / discharging / standby) with power, and the battery state
+- optionally grid, solar and home power, if you pick sensors for them in the card editor
+- the override buttons (Auto / Stop / Self-consumption) with end time and a warning if the battery is not following. **Shown only when control is turned on** in the integration (*Configure → Allow Home Assistant to control the battery*); the card's *Show override* switch can hide them again.
+
+```yaml
+type: custom:xolta-battery-card
+# all optional:
+grid_power: sensor.my_grid_power
+solar_power: sensor.my_solar_power
+home_power: sensor.my_home_power
+show_control: true
+```
+
+Want the whole house's energy flow? *Power Flow Card Plus* from the Marketplace works well next to it.
 
 ## Examples
 

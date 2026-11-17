@@ -44,6 +44,15 @@ The integration sends the same writes; its own live run is listed below once don
 | Self-consumption (`set_override`) | From sleep: running after ~65 s, then a steady 0.65–0.80 kW discharge; grid import read 0.07 kW. The cloud reset the mode to 0 once; the next repeat (within 20 s) restored it. |
 | Auto (select) | Writes stopped at once; the cloud reset the mode ~3.5 min later and continued its own plan. |
 
+## Battery card (v0.2.0)
+
+| Behaviour | How it was checked |
+|---|---|
+| Card is served and loaded without a manual resource | `/xolta_modbus/xolta-battery-card.js` answered HTTP 200 after a restart; the card appeared in a dashboard. |
+| Finds the battery by itself | Rendered with no entity configuration on the test system. |
+| Light and dark theme | Screenshots of both. |
+| Override buttons | Shown when control is enabled, hidden when it is off. |
+
 ## Connection checks
 
 | Situation | How it was checked |

@@ -2,7 +2,7 @@
   "config": {
     "step": {
       "user": {
-        "title": "Xolta battery (local Modbus)",
+        "title": "Ebbefos / Xolta battery (local Modbus)",
         "description": "Enter the IP address of the Xolta site controller. Give it a fixed IP address (DHCP reservation) in your router first.",
         "data": {
           "host": "IP address",
@@ -41,7 +41,7 @@
   "options": {
     "step": {
       "init": {
-        "title": "Xolta battery options",
+        "title": "Ebbefos / Xolta battery options",
         "data": {
           "allow_write": "Allow Home Assistant to control the battery",
           "scan_interval": "Read interval",
@@ -61,11 +61,11 @@
   },
   "issues": {
     "modbus_closed": {
-      "title": "Xolta battery: Modbus is not open",
+      "title": "Ebbefos / Xolta battery: Modbus is not open",
       "description": "The battery controller answers at {host}, but Modbus does not. Either Modbus has not been opened yet, or it was closed (for example by a Xolta software update).\n\nAsk Ebbefos/Xolta support (support@ebbefosenergy.dk) to enable the Modbus TCP server on port 502. The README has an e-mail you can copy.\n\nHome Assistant keeps checking, and this notice disappears by itself once Modbus answers again."
     },
     "controller_unreachable": {
-      "title": "Xolta battery: no answer from {host}",
+      "title": "Ebbefos / Xolta battery: no answer from {host}",
       "description": "Nothing answers at {host}. Check that the battery is on, that the controller still has this IP address (use a DHCP reservation), and that Home Assistant can reach that network. If the IP address changed, use Reconfigure on the integration.\n\nThis notice disappears by itself once the controller answers again."
     }
   },

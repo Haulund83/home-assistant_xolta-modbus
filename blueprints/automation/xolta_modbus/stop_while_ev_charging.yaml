@@ -1,9 +1,9 @@
 blueprint:
-  name: Xolta – stop the battery while the EV charges
+  name: Ebbefos / Xolta – stop the battery while the EV charges
   description: >-
     Stops the Xolta battery while your EV charger draws power, so the battery
     is not drained into the car, and returns to Auto (cloud control) when
-    charging ends. Requires the Xolta Battery (local Modbus) integration with
+    charging ends. Requires the Ebbefos / Xolta Battery (local Modbus) integration with
     control enabled.
   domain: automation
   source_url: https://github.com/Haulund83/home-assistant_xolta-modbus/blob/main/blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml
