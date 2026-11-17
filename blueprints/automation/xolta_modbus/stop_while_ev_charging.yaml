@@ -1,63 +1,107 @@
 blueprint:
   name: Ebbefos / Xolta – stop the battery while the EV charges
   description: >-
-    Stops the Xolta battery while your EV charger draws power, so the battery
-    is not drained into the car, and returns to Auto (cloud control) when
-    charging ends. Requires the Ebbefos / Xolta Battery (local Modbus) integration with
-    control enabled.
+    Stops the battery while your EV charger draws power, so the battery is not
+    drained into the car, and returns to Auto (cloud control) when charging
+    ends. Requires the Ebbefos / Xolta Battery (local Modbus) integration with
+    control enabled. Optionally give it a toggle helper so it only releases a
+    Stop that it started itself (a Stop you chose by hand is left alone).
   domain: automation
   source_url: https://github.com/Haulund83/home-assistant_xolta-modbus/blob/main/blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml
   input:
     charger_power:
       name: EV charger power
-      description: Power sensor of the charger (W or kW).
+      description: Power sensor of the charger.
       selector:
         entity:
           domain: sensor
           device_class: power
-    threshold:
-      name: Charging threshold
-      description: The car counts as charging above this value (same unit as the sensor).
-      default: 1000
-      selector:
-        number:
-          min: 0
-          max: 22000
-          mode: box
     override:
-      name: Xolta override
+      name: Battery override
       selector:
         entity:
           integration: xolta_modbus
           domain: select
+    start_above:
+      name: Charging starts above
+      description: Same unit as the charger sensor (e.g. 1.0 for kW, 1000 for W).
+      default: 1.0
+      selector:
+        number:
+          min: 0
+          max: 22000
+          step: 0.1
+          mode: box
+    start_minutes:
+      name: … for at least (minutes)
+      default: 2
+      selector:
+        number:
+          min: 0
+          max: 60
+          mode: box
+    stop_below:
+      name: Charging has ended below
+      description: Same unit as the charger sensor (e.g. 0.3 for kW, 300 for W).
+      default: 0.3
+      selector:
+        number:
+          min: 0
+          max: 22000
+          step: 0.1
+          mode: box
+    stop_minutes:
+      name: … for at least (minutes)
+      default: 10
+      selector:
+        number:
+          min: 0
+          max: 120
+          mode: box
     max_hours:
-      name: Maximum duration
-      description: Safety limit; the override ends by itself after this many hours.
+      name: Maximum duration (hours)
+      description: Safety limit; the override ends by itself after this time.
       default: 14
       selector:
         number:
           min: 1
           max: 48
-          unit_of_measurement: h
           mode: box
+    started_flag:
+      name: Remember that this automation started the Stop (optional)
+      description: >-
+        A toggle helper. When set, charging ending only releases a Stop that
+        this automation started.
+      default: ""
+      selector:
+        entity:
+          domain: input_boolean
 
-mode: restart
+mode: queued
 
 triggers:
   - trigger: numeric_state
     entity_id: !input charger_power
-    above: !input threshold
-    for: { minutes: 2 }
+    above: !input start_above
+    for:
+      minutes: !input start_minutes
     id: start
   - trigger: numeric_state
     entity_id: !input charger_power
-    below: !input threshold
-    for: { minutes: 5 }
+    below: !input stop_below
+    for:
+      minutes: !input stop_minutes
     id: stop
+  - trigger: state
+    entity_id: !input override
+    to: auto
+    id: released
+
+variables:
+  override_entity: !input override
+  flag: !input started_flag
 
 actions:
-  - variables:
-      override_entity: !input override
   - choose:
       - conditions:
           - condition: trigger
@@ -71,14 +115,38 @@ actions:
             data:
               mode: stop
               duration: !input max_hours
+          - if:
+              - condition: template
+                value_template: "{{ flag != '' }}"
+            then:
+              - action: input_boolean.turn_on
+                target:
+                  entity_id: "{{ flag }}"
       - conditions:
           - condition: trigger
             id: stop
           - condition: template
-            value_template: "{{ is_state(override_entity, 'stop') }}"
+            value_template: "{{ is_state(override_entity, 'stop') and (flag == '' or is_state(flag, 'on')) }}"
         sequence:
           - action: xolta_modbus.set_override
             target:
               entity_id: !input override
             data:
               mode: auto
+          - if:
+              - condition: template
+                value_template: "{{ flag != '' }}"
+            then:
+              - action: input_boolean.turn_off
+                target:
+                  entity_id: "{{ flag }}"
+      - conditions:
+          # Override ended (expired or chosen by hand): forget that we started it.
+          - condition: trigger
+            id: released
+          - condition: template
+            value_template: "{{ flag != '' and is_state(flag, 'on') }}"
+        sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: "{{ flag }}"

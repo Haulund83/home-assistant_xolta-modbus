@@ -44,6 +44,16 @@ The integration sends the same writes; its own live run is listed below once don
 | Self-consumption (`set_override`) | From sleep: running after ~65 s, then a steady 0.65–0.80 kW discharge; grid import read 0.07 kW. The cloud reset the mode to 0 once; the next repeat (within 20 s) restored it. |
 | Auto (select) | Writes stopped at once; the cloud reset the mode ~3.5 min later and continued its own plan. |
 
+## Blueprint: stop the battery while the EV charges
+
+| Behaviour | How it was checked |
+|---|---|
+| Start | Charger power set to 1.5 kW (start above 1.0 kW for 2 min): the override went to Stop exactly 2 min later, with a 14 h end time, and the helper turned on. |
+| Release | Charger power set to 0 (stop below 0.3 kW for 10 min): back to Auto exactly 10 min later; the helper turned off. |
+| Notifications (example automation in the test system) | "Overridden" at Stop and "ended" at Auto arrived on the phone. |
+
+The charger power was simulated in Home Assistant; the writes to the battery were real.
+
 ## Battery card (v0.2.0)
 
 | Behaviour | How it was checked |
