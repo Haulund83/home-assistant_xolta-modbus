@@ -62,6 +62,7 @@ The charger power was simulated in Home Assistant; the writes to the battery wer
 | Finds the battery by itself | Rendered with no entity configuration on the test system. |
 | Light and dark theme | Screenshots of both. |
 | Override buttons | Shown when control is enabled, hidden when it is off. |
+| Translated states right after loading (v0.2.1) | Before the fix a freshly opened dashboard could show *standby* / *running* until the state changed; after updating and restarting it showed *Standby* / *Running*. Covered by `tests/card_render.mjs`. |
 
 ## Connection checks
 
