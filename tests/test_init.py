@@ -31,7 +31,7 @@ DISCHARGED = "sensor.xolta_battery_energy_discharged"
 async def _tick(hass: HomeAssistant, freezer: FrozenDateTimeFactory, seconds: float) -> None:
     freezer.tick(timedelta(seconds=seconds))
     async_fire_time_changed(hass)
-    await hass.async_block_till_done()
+    await hass.async_block_till_done(wait_background_tasks=True)
 
 
 async def test_read_only_setup(hass: HomeAssistant, setup_entry) -> None:
@@ -59,7 +59,11 @@ async def test_waits_for_modbus_and_starts_by_itself(
         assert issues.async_get_issue(DOMAIN, f"modbus_closed_{entry.entry_id}")
 
         client.offline = None  # Ebbefos opened Modbus
-        await _tick(hass, freezer, 120)
+        # HA retries with a growing back-off; give it a few minutes of (frozen) time.
+        for _ in range(6):
+            await _tick(hass, freezer, 30)
+            if entry.state is ConfigEntryState.LOADED:
+                break
         assert entry.state is ConfigEntryState.LOADED
         assert issues.async_get_issue(DOMAIN, f"modbus_closed_{entry.entry_id}") is None
         assert hass.states.get(SOC) is not None
