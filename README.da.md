@@ -116,6 +116,7 @@ Entitets-id'erne følger det sprog, Home Assistant havde, da integrationen blev 
 
 **Stop batteriet, mens elbilen lader:** Importér blueprintet
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml) (Indstillinger → Automationer → Blueprints → Importér, indsæt GitHub-linket til filen).
+Giv den batteriets *Ladestatus*, hvis batteriet kun skal stoppes, mens det aflader; så kan det stadig lade (fx på billig nattestrøm), mens bilen lader.
 
 **Tjeneste i en automation:**
 ```yaml

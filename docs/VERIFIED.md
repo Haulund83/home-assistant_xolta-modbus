@@ -51,6 +51,8 @@ The integration sends the same writes; its own live run is listed below once don
 | Start | Charger power set to 1.5 kW (start above 1.0 kW for 2 min): the override went to Stop exactly 2 min later, with a 14 h end time, and the helper turned on. |
 | Release | Charger power set to 0 (stop below 0.3 kW for 10 min): back to Auto exactly 10 min later; the helper turned off. |
 | Notifications (example automation in the test system) | "Overridden" at Stop and "ended" at Auto arrived on the phone. |
+| Only while discharging: battery charging | Charging status input set; charger power set to 7 kW while the cloud charged the battery at 3.6 kW. The automation ran exactly 2 min later and left the battery on Auto (trace: no branch taken). |
+| Only while discharging: battery starts discharging during the charge | Covered by `tests/test_blueprint.py`; not yet seen live. |
 
 The charger power was simulated in Home Assistant; the writes to the battery were real.
 

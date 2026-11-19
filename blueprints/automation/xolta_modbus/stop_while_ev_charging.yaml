@@ -4,8 +4,10 @@ blueprint:
     Stops the battery while your EV charger draws power, so the battery is not
     drained into the car, and returns to Auto (cloud control) when charging
     ends. Requires the Ebbefos / Xolta Battery (local Modbus) integration with
-    control enabled. Optionally give it a toggle helper so it only releases a
-    Stop that it started itself (a Stop you chose by hand is left alone).
+    control enabled. Optionally give it the battery's charging status, so it
+    only stops the battery while it discharges (it may still charge, e.g. on
+    cheap night power), and a toggle helper so it only releases a Stop that it
+    started itself (a Stop you chose by hand is left alone).
   domain: automation
   source_url: https://github.com/Haulund83/home-assistant_xolta-modbus/blob/main/blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml
   input:
@@ -67,6 +69,26 @@ blueprint:
           min: 1
           max: 48
           mode: box
+    battery_status:
+      name: Only while the battery discharges (optional)
+      description: >-
+        The battery's charging status sensor (Charging / Discharging / Standby).
+        When set, the battery is only stopped while it discharges, so it can
+        still charge while the car charges. If it starts discharging later
+        during the charge, it is stopped then. Leave empty to always stop it.
+      default: ""
+      selector:
+        entity:
+          integration: xolta_modbus
+          domain: sensor
+    discharge_minutes:
+      name: … discharging for at least (minutes)
+      default: 1
+      selector:
+        number:
+          min: 0
+          max: 30
+          mode: box
     started_flag:
       name: Remember that this automation started the Stop (optional)
       description: >-
@@ -79,12 +101,21 @@ blueprint:
 
 mode: queued
 
+trigger_variables:
+  status_entity: !input battery_status
+
 triggers:
   - trigger: numeric_state
     entity_id: !input charger_power
     above: !input start_above
     for:
       minutes: !input start_minutes
+    id: start
+  # The battery starts discharging while the car is already charging.
+  - trigger: template
+    value_template: "{{ status_entity != '' and is_state(status_entity, 'discharging') }}"
+    for:
+      minutes: !input discharge_minutes
     id: start
   - trigger: numeric_state
     entity_id: !input charger_power
@@ -100,6 +131,8 @@ triggers:
 variables:
   override_entity: !input override
   flag: !input started_flag
+  charger: !input charger_power
+  start_above: !input start_above
 
 actions:
   - choose:
@@ -107,7 +140,10 @@ actions:
           - condition: trigger
             id: start
           - condition: template
-            value_template: "{{ is_state(override_entity, 'auto') }}"
+            value_template: >-
+              {{ is_state(override_entity, 'auto')
+                 and (status_entity == '' or is_state(status_entity, 'discharging'))
+                 and states(charger) | float(0) > start_above | float(0) }}
         sequence:
           - action: xolta_modbus.set_override
             target:

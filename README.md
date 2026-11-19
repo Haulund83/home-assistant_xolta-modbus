@@ -131,6 +131,7 @@ Entity IDs follow the language Home Assistant had when the integration was added
 
 **Stop the battery while the EV charges:** import the blueprint
 [`blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml`](blueprints/automation/xolta_modbus/stop_while_ev_charging.yaml).
+Give it the battery's *Charging status* sensor if the battery should only be stopped while it discharges; it can then still charge (e.g. on cheap night power) while the car charges.
 
 **Action in an automation:**
 ```yaml
